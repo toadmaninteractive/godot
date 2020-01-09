@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifndef PS4_ENABLED
 
 #include "net_socket_posix.h"
 
@@ -715,3 +716,5 @@ Error NetSocketPosix::leave_multicast_group(const IP_Address &p_multi_address, S
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
 #endif
+
+#endif // #ifndef PS4_ENABLED

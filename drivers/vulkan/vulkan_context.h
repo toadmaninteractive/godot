@@ -31,6 +31,8 @@
 #ifndef VULKAN_CONTEXT_H
 #define VULKAN_CONTEXT_H
 
+#ifdef VULKAN_ENABLED
+
 #include "core/error_list.h"
 #include "core/map.h"
 #include "core/ustring.h"
@@ -208,5 +210,7 @@ public:
 	VulkanContext();
 	virtual ~VulkanContext();
 };
+
+#endif // #ifdef VULKAN_ENABLED
 
 #endif // VULKAN_DEVICE_H

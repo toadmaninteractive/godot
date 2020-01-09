@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #define VMA_IMPLEMENTATION
 #ifdef DEBUG_ENABLED
 #ifndef _MSC_VER
@@ -35,3 +37,5 @@
 #endif
 #endif
 #include "vk_mem_alloc.h"
+
+#endif // #ifdef VULKAN_ENABLED

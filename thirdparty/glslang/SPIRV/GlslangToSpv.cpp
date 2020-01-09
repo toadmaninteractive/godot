@@ -361,7 +361,7 @@ void TranslateMemoryDecoration(const glslang::TQualifier& qualifier, std::vector
             memory.push_back(spv::DecorationCoherent);
         }
     }
-    if (qualifier.restrict)
+    if (qualifier.restric)
         memory.push_back(spv::DecorationRestrict);
     if (qualifier.readonly)
         memory.push_back(spv::DecorationNonWritable);
@@ -1250,8 +1250,8 @@ void InheritQualifiers(glslang::TQualifier& child, const glslang::TQualifier& pa
         child.nonprivate = true;
     if (parent.volatil)
         child.volatil = true;
-    if (parent.restrict)
-        child.restrict = true;
+    if (parent.restric)
+        child.restric = true;
     if (parent.readonly)
         child.readonly = true;
     if (parent.writeonly)
@@ -3900,9 +3900,9 @@ void TGlslangToSpvTraverser::makeFunctions(const glslang::TIntermSequence& glslF
             // memory and use RestrictPointer/AliasedPointer.
             if (originalParam(type.getQualifier().storage, type, false) ||
                 !writableParam(type.getQualifier().storage)) {
-                decorations.push_back(type.getQualifier().restrict ? spv::DecorationRestrict : spv::DecorationAliased);
+                decorations.push_back(type.getQualifier().restric ? spv::DecorationRestrict : spv::DecorationAliased);
             } else {
-                decorations.push_back(type.getQualifier().restrict ? spv::DecorationRestrictPointerEXT : spv::DecorationAliasedPointerEXT);
+                decorations.push_back(type.getQualifier().restric ? spv::DecorationRestrictPointerEXT : spv::DecorationAliasedPointerEXT);
             }
         }
     };
@@ -7557,7 +7557,7 @@ spv::Id TGlslangToSpvTraverser::getSymbolId(const glslang::TIntermSymbol* symbol
     }
 
     if (symbol->getBasicType() == glslang::EbtReference) {
-        builder.addDecoration(id, symbol->getType().getQualifier().restrict ? spv::DecorationRestrictPointerEXT : spv::DecorationAliasedPointerEXT);
+        builder.addDecoration(id, symbol->getType().getQualifier().restric ? spv::DecorationRestrictPointerEXT : spv::DecorationAliasedPointerEXT);
     }
 
     return id;

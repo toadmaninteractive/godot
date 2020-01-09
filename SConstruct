@@ -56,8 +56,11 @@ custom_tools = ['default']
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
+# TOADMAN: Modified if-statement in order to set the custom_tools for PS4
 if os.name == "nt" and (platform_arg == "android" or ARGUMENTS.get("use_mingw", False)):
     custom_tools = ['mingw']
+elif os.name == "nt" and platform_arg == "ps4":
+    custom_tools = ['clang', 'clangxx', 'ar', 'link', 'textfile', 'zip', 'msvs']
 elif platform_arg == 'javascript':
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ['cc', 'c++', 'ar', 'link', 'textfile', 'zip']
@@ -143,7 +146,7 @@ opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True)
 opts.Add(BoolVariable('builtin_certs', "Bundle default SSL certificates to be used if you don't specify an override in the project settings", True))
 opts.Add(BoolVariable('builtin_enet', "Use the built-in ENet library", True))
 opts.Add(BoolVariable('builtin_freetype', "Use the built-in FreeType library", True))
-opts.Add(BoolVariable('builtin_glslang', "Use the built-in glslang library", True))
+opts.Add(BoolVariable('builtin_glslang', "Use the built-in glslang library", False)) # TOADMAN
 opts.Add(BoolVariable('builtin_libogg', "Use the built-in libogg library", True))
 opts.Add(BoolVariable('builtin_libpng', "Use the built-in libpng library", True))
 opts.Add(BoolVariable('builtin_libtheora', "Use the built-in libtheora library", True))
@@ -152,13 +155,13 @@ opts.Add(BoolVariable('builtin_libvpx', "Use the built-in libvpx library", True)
 opts.Add(BoolVariable('builtin_libwebp', "Use the built-in libwebp library", True))
 opts.Add(BoolVariable('builtin_wslay', "Use the built-in wslay library", True))
 opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", True))
-opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
+opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", False))    # TOADMAN
 opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
 opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_pcre2_with_jit', "Use JIT compiler for the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
-opts.Add(BoolVariable('builtin_vulkan', "Use the built-in Vulkan loader library and headers", True))
+opts.Add(BoolVariable('builtin_vulkan', "Use the built-in Vulkan loader library and headers", False)) # TOADMAN
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the built-in zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the built-in Zstd library", True))
@@ -319,8 +322,9 @@ if selected_platform in platform_list:
     detect.configure(env)
 
     # Enable C++11 support
+    # TOADMAN: Changed from c++11 to c++14 (needed by ps4 stdlib impl)
     if not env.msvc:
-        env.Append(CXXFLAGS=['-std=c++11'])
+        env.Append(CXXFLAGS=['-std=c++14'])
 
     # Configure compiler warnings
     if env.msvc:
@@ -664,6 +668,7 @@ if 'env' in locals():
             node_count_max = int(f.readline())
     except:
         pass
+
 
     cache_directory = os.environ.get("SCONS_CACHE")
     # Simple cache pruning, attached to SCons' progress callback. Trim the

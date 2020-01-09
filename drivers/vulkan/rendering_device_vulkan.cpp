@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #include "rendering_device_vulkan.h"
 #include "core/hashfuncs.h"
 #include "core/os/file_access.h"
@@ -7065,3 +7067,5 @@ void RenderingDeviceVulkan::finalize() {
 RenderingDeviceVulkan::RenderingDeviceVulkan() {
 	screen_prepared = false;
 }
+
+#endif // #ifdef VULKAN_ENABLED

@@ -480,8 +480,8 @@ public:
         workgroupcoherent = false;
         subgroupcoherent  = false;
         nonprivate = false;
-        volatil      = false;
-        restrict     = false;
+        volatil       = false;
+        restric     = false;
         readonly     = false;
         writeonly    = false;
     }
@@ -529,7 +529,7 @@ public:
     bool subgroupcoherent  : 1;
     bool nonprivate   : 1;
     bool volatil      : 1;
-    bool restrict     : 1;
+    bool restric     : 1;
     bool readonly     : 1;
     bool writeonly    : 1;
     bool specConstant : 1;  // having a constant_id is not sufficient: expressions have no id, but are still specConstant
@@ -537,11 +537,11 @@ public:
 
     bool isMemory() const
     {
-        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly || nonprivate;
+        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restric || readonly || writeonly || nonprivate;
     }
     bool isMemoryQualifierImageAndSSBOOnly() const
     {
-        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly;
+        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restric || readonly || writeonly;
     }
     bool bufferReferenceNeedsVulkanMemoryModel() const
     {
@@ -1952,7 +1952,7 @@ public:
             appendStr(" nonprivate");
         if (qualifier.volatil)
             appendStr(" volatile");
-        if (qualifier.restrict)
+        if (qualifier.restric)
             appendStr(" restrict");
         if (qualifier.readonly)
             appendStr(" readonly");
