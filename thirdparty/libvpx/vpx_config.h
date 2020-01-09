@@ -76,6 +76,9 @@
 #ifdef _WIN32
 	#define HAVE_PTHREAD_H 0
 	#define HAVE_UNISTD_H 0
+#elif __ORBIS__
+	#define HAVE_PTHREAD_H 0
+	#define HAVE_UNISTD_H 0
 #else
 	#define HAVE_PTHREAD_H 1
 	#define HAVE_UNISTD_H 1

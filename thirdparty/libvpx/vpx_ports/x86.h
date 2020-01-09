@@ -142,6 +142,8 @@ static INLINE uint64_t xgetbv(void) {
 #if WINAPI_FAMILY_PARTITION(WINAPI_FAMILY_APP)
 #define getenv(x) NULL
 #endif
+#elif defined(__ORBIS__)
+#define getenv(x) NULL
 #endif
 
 #define HAS_MMX     0x01

@@ -220,6 +220,10 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_stack* SLJIT_FUNC sljit_allocate_stack(slj
 		GetSystemInfo(&si);
 		sljit_page_align = si.dwPageSize - 1;
 	}
+#elif __ORBIS__
+	if (!sljit_page_align) {
+		sljit_page_align = 65535;
+	}
 #else
 	if (!sljit_page_align) {
 		sljit_page_align = sysconf(_SC_PAGESIZE);

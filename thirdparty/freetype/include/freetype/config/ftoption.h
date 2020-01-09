@@ -110,7 +110,7 @@ FT_BEGIN_HEADER
    * ```
    *
    */
-#define FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
+#undef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
 
 
   /**************************************************************************
