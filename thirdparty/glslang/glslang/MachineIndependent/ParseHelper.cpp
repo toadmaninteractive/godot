@@ -1165,7 +1165,7 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                             error(arguments->getLoc(), message, "readonly", "");
                         if (argQualifier.writeonly && ! formalQualifier.writeonly)
                             error(arguments->getLoc(), message, "writeonly", "");
-                        if (!builtIn && argQualifier.restrict && ! formalQualifier.restrict)
+                        if (!builtIn && argQualifier.restric && ! formalQualifier.restric)
                             error(arguments->getLoc(), message, "restrict", "");
                     }
                     if (!builtIn && argQualifier.layoutFormat != formalQualifier.layoutFormat) {
@@ -3467,7 +3467,7 @@ void TParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, cons
     MERGE_SINGLETON(subgroupcoherent);
     MERGE_SINGLETON(nonprivate);
     MERGE_SINGLETON(volatil);
-    MERGE_SINGLETON(restrict);
+    MERGE_SINGLETON(restric);
     MERGE_SINGLETON(readonly);
     MERGE_SINGLETON(writeonly);
     MERGE_SINGLETON(specConstant);
@@ -4402,7 +4402,7 @@ void TParseContext::paramCheckFix(const TSourceLoc& loc, const TQualifier& quali
         type.getQualifier().nonprivate = qualifier.nonprivate;
         type.getQualifier().readonly  = qualifier.readonly;
         type.getQualifier().writeonly = qualifier.writeonly;
-        type.getQualifier().restrict  = qualifier.restrict;
+        type.getQualifier().restric  = qualifier.restric;
     }
 
     if (qualifier.isAuxiliary() ||

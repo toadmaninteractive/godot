@@ -35,6 +35,8 @@
 #pragma warning( disable : 4065 )
 #endif
 
+#ifdef VULKAN_ENABLED
+
 #include <vulkan/vulkan.h>
 
 
@@ -3720,3 +3722,5 @@ static inline const char * GetPhysDevFeatureString(uint32_t index) {
 
     return IndexToPhysDevFeatureString[index];
 }
+
+#endif // #ifdef VULKAN_ENABLED

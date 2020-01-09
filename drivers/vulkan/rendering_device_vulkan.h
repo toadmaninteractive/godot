@@ -31,6 +31,8 @@
 #ifndef RENDERING_DEVICE_VULKAN_H
 #define RENDERING_DEVICE_VULKAN_H
 
+#ifdef VULKAN_ENABLED
+
 #include "core/oa_hash_map.h"
 #include "core/os/thread_safe.h"
 #include "core/rid_owner.h"
@@ -1123,5 +1125,7 @@ public:
 
 	RenderingDeviceVulkan();
 };
+
+#endif // #ifdef VULKAN_ENABLED
 
 #endif // RENDERING_DEVICE_VULKAN_H

@@ -1,0 +1,3 @@
+[submodule "toadman/ps4"]
+	path = toadman/ps4
+	url = https://gitlab.toadman.io/godot/godot_ps4.git

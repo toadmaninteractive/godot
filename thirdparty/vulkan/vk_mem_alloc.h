@@ -23,6 +23,8 @@
 #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
 #define AMD_VULKAN_MEMORY_ALLOCATOR_H
 
+#ifdef VULKAN_ENABLED
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18258,5 +18260,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaDestroyImage(
 			&allocation);
 	}
 }
+
+#endif // #ifdef VULKAN_ENABLED
 
 #endif // #ifdef VMA_IMPLEMENTATION
