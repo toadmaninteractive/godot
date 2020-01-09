@@ -80,6 +80,8 @@ static int get_cpu_count()
                 core_count++;
         }
     }
+#elif __ORBIS__
+    core_count = 8;
 #else
     /* other platforms */
 #endif
