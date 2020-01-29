@@ -31,8 +31,6 @@
 #ifndef NET_SOCKET_UNIX_H
 #define NET_SOCKET_UNIX_H
 
-#ifndef PS4_ENABLED
-
 #include "core/io/net_socket.h"
 
 #if defined(WINDOWS_ENABLED)
@@ -103,7 +101,5 @@ public:
 	NetSocketPosix();
 	~NetSocketPosix();
 };
-
-#endif // #ifndef PS4_ENABLED
 
 #endif
