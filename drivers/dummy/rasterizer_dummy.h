@@ -174,10 +174,11 @@ public:
 	virtual RID texture_2d_create(const Ref<Image> &p_image) override {
 		DummyTexture *texture = memnew(DummyTexture);
 		ERR_FAIL_COND_V(!texture, RID());
-
+		
 		texture->width = p_image->get_width();
 		texture->height = p_image->get_height();
 		texture->format = p_image->get_format();
+		texture->image.instance();
 		texture->image->create(texture->width, texture->height, false, texture->format, p_image->get_data());
 
 		return texture_owner.make_rid(texture);
@@ -193,6 +194,7 @@ public:
 
 		for (int i = 0; i < p_layers.size(); ++i) {
 			Ref<Image> layer;
+			layer.instance();
 			layer->create(texture->width, texture->height, false, texture->format, p_layers[i]->get_data());
 			texture->layers.push_back(layer);
 		}
@@ -210,6 +212,7 @@ public:
 
 		for (int i = 0; i < p_slices.size(); ++i) {
 			Ref<Image> layer;
+			layer.instance();
 			layer->create(texture->width, texture->height, false, texture->format, p_slices[i]->get_data());
 			texture->layers.push_back(layer);
 		}
