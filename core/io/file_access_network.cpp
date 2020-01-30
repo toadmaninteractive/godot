@@ -89,6 +89,8 @@ void FileAccessNetworkClient::_thread_func() {
 
 		DEBUG_PRINT("SEM WAIT - " + itos(sem->get()));
 		Error err = sem->wait();
+		if (quit)
+			break;
 		if (err != OK)
 			ERR_PRINT("sem->wait() failed");
 		DEBUG_TIME("sem_unlock");
@@ -111,6 +113,7 @@ void FileAccessNetworkClient::_thread_func() {
 
 		DEBUG_TIME("sem_read");
 		int id = get_32();
+		DEBUG_PRINT("GET ID: " + itos(id));
 
 		int response = get_32();
 		DEBUG_PRINT("GET RESPONSE: " + itos(response));
@@ -546,7 +549,6 @@ FileAccessNetwork::~FileAccessNetwork() {
 
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
-	id = nc->last_id++;
 	nc->accesses.erase(id);
 	nc->unlock_mutex();
 }
