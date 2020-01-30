@@ -23,7 +23,9 @@ SConscript('coremidi/SCsub')
 SConscript('winmidi/SCsub')
 
 # Graphics drivers
-if (env["platform"] != "server"):
+if (env["platform"] == "ps4"):
+    SConscript('dummy/SCsub')
+elif (env["platform"] != "server"):
 #    SConscript('gles3/SCsub')
 #    SConscript('gles2/SCsub')
     SConscript('vulkan/SCsub')
