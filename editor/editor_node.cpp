@@ -4603,6 +4603,20 @@ void EditorNode::_update_layouts_menu() {
 	}
 }
 
+// #ifdef PS4_EDITOR_TOOLS
+#include "modules/toadman/shader_exporter.h"
+
+void EditorNode::_ps4_menu_option(int p_id)
+{
+	switch (p_id) {
+		case 0: {
+			ShaderExporter exporter;
+			exporter.export_shaders();
+		} break;
+	}
+}
+// #endif // PS4_EDITOR_TOOLS
+
 void EditorNode::_layout_menu_option(int p_id) {
 
 	switch (p_id) {
@@ -5472,6 +5486,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_dock_tab_changed", &EditorNode::_dock_tab_changed);
 
 	ClassDB::bind_method("_layout_menu_option", &EditorNode::_layout_menu_option);
+	ClassDB::bind_method("_ps4_menu_option", &EditorNode::_ps4_menu_option);
 
 	ClassDB::bind_method("set_current_scene", &EditorNode::set_current_scene);
 	ClassDB::bind_method("set_current_version", &EditorNode::set_current_version);
@@ -6257,6 +6272,22 @@ EditorNode::EditorNode() {
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->set_item_checked(p->get_item_count() - 1, true);
 	p->connect("id_pressed", this, "_menu_option");
+
+// #ifdef PS4_EDITOR_TOOLS
+	menu_hb->add_spacer();
+
+	ps4_menu = memnew(MenuButton);
+	ps4_menu->set_flat(false);
+	ps4_menu->set_switch_on_hover(true);
+	ps4_menu->set_text(TTR("PS4"));
+	ps4_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	left_menu_hb->add_child(ps4_menu);
+
+	p = ps4_menu->get_popup();
+	p->connect("id_pressed", this, "_ps4_menu_option");
+	p->add_item(TTR("Compile Shaders"), 0);
+
+// #endif // PS4_EDITOR_TOOLS
 
 	menu_hb->add_spacer();
 
