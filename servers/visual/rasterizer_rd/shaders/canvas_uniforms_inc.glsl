@@ -37,9 +37,18 @@ layout(push_constant, binding = 0, std430) uniform DrawData {
 	uint flags;
 	uint specular_shininess;
 #ifdef USE_PRIMITIVE
-	vec2 points[3];
-	vec2 uvs[3];
-	uint colors[6];
+	vec2 points0;
+	vec2 points1;
+	vec2 points2;
+	vec2 uvs0;
+	vec2 uvs1;
+	vec2 uvs2;
+	uint colors0;
+	uint colors1;
+	uint colors2;
+	uint colors3;
+	uint colors4;
+	uint colors5;
 #else
 	vec4 modulation;
 	vec4 ninepatch_margins;
@@ -49,7 +58,10 @@ layout(push_constant, binding = 0, std430) uniform DrawData {
 
 #endif
 	vec2 color_texture_pixel_size;
-	uint lights[4];
+	uint lights0;
+	uint lights1;
+	uint lights2;
+	uint lights3;
 }
 draw_data;
 

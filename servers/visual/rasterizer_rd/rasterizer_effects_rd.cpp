@@ -977,3 +977,11 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	blur.shader.version_free(blur.shader_version);
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
+
+void RasterizerEffectsRD::get_shaders(Vector<ShaderRD*>& shaders) {
+	shaders.push_back(&blur.shader);
+	shaders.push_back(&roughness.shader);
+	shaders.push_back(&sky.shader);
+	shaders.push_back(&tonemap.shader);
+	shaders.push_back(&copy.shader);
+}

@@ -583,5 +583,5 @@ public:
 
 	RasterizerSceneHighEndRD(RasterizerStorageRD *p_storage);
 	~RasterizerSceneHighEndRD();
-};
+	void get_shaders(Vector<ShaderRD*>& shaders);};
 #endif // RASTERIZER_SCENE_HIGHEND_RD_H

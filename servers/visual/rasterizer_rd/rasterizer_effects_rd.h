@@ -106,6 +106,7 @@ class RasterizerEffectsRD {
 		float ssao_color[4];
 	};
 
+public:
 	struct Blur {
 		BlurPushConstant push_constant;
 		BlurShaderRD shader;
@@ -113,6 +114,8 @@ class RasterizerEffectsRD {
 		RenderPipelineVertexFormatCacheRD pipelines[BLUR_MODE_MAX];
 
 	} blur;
+
+private:
 
 	enum CubemapRoughnessSource {
 		CUBEMAP_ROUGHNESS_SOURCE_PANORAMA,
@@ -424,6 +427,8 @@ public:
 	void generate_ssao(RID p_depth_buffer, RID p_normal_buffer, const Size2i &p_depth_buffer_size, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao1, bool p_half_size, RID p_ao2, RID p_upscale_buffer, float p_intensity, float p_radius, float p_bias, const CameraMatrix &p_projection, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_edge_sharpness);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
+
+	void get_shaders(Vector<ShaderRD*>& shaders);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();

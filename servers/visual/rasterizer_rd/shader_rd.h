@@ -35,6 +35,7 @@
 #include "core/map.h"
 #include "core/rid_owner.h"
 #include "core/variant.h"
+#include "servers/visual/rendering_device.h"
 #include <stdio.h>
 #include <mutex>
 /**
@@ -128,9 +129,13 @@ public:
 		return version->variants[p_variant];
 	}
 
+	Vector<Vector<RD::ShaderStageData>> all_stages;
+
 	bool version_is_valid(RID p_version);
 
 	bool version_free(RID p_version);
+
+	String get_name() const { return name; } 
 
 	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
 	virtual ~ShaderRD();

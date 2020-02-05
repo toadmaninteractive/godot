@@ -4817,3 +4817,8 @@ RasterizerStorageRD::~RasterizerStorageRD() {
 		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
 }
+
+void RasterizerStorageRD::get_shaders(Vector<ShaderRD*>& shaders) {
+	get_effects()->get_shaders(shaders);
+	shaders.push_back(&giprobe_sdf_shader);
+}

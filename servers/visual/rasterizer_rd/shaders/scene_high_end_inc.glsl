@@ -3,7 +3,10 @@
 
 layout(push_constant, binding = 0, std430) uniform DrawCall {
 	uint instance_index;
-	uint pad[3]; //16 bits minimum size
+	
+	uint pad0;
+	uint pad1;
+	uint pad2;
 }
 draw_call;
 
