@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_toadman = env_modules.Clone()
+
+# Thirdparty source files
+thirdparty_dir = "#thirdparty/spirv-cross/"
+thirdparty_sources = [
+		"spirv_cfg.cpp",
+		"spirv_cpp.cpp",
+		"spirv_cross.cpp",		
+		"spirv_cross_parsed_ir.cpp",
+		"spirv_cross_util.cpp",
+		"spirv_hlsl.cpp",
+		"spirv_glsl.cpp",
+		"spirv_parser.cpp",
+		"spirv_reflect.cpp"
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_toadman.Prepend(CPPPATH=[thirdparty_dir, '#servers/visual/rasterizer_rd'])
+
+env_thirdparty = env_toadman.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
+# Godot's own source files
+env_toadman.add_source_files(env.modules_sources, "*.cpp")
