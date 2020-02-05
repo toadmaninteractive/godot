@@ -209,7 +209,7 @@ void ShaderRD::_clear_version(Version *p_version) {
 void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 
 	Vector<RD::ShaderStageData> stages;
-
+	
 	String error;
 	String current_source;
 	RD::ShaderStage current_stage = RD::SHADER_STAGE_VERTEX;
@@ -353,8 +353,9 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		variant_set_mutex.unlock();
 		return;
 	}
-
+	
 	RID shader = RD::get_singleton()->shader_create(stages);
+	all_stages.set(p_variant, stages);
 
 	variant_set_mutex.lock();
 	p_version->variants[p_variant] = shader;
@@ -370,7 +371,8 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 	p_version->variants = memnew_arr(RID, variant_defines.size());
 #if 1
-
+	all_stages.clear();
+	all_stages.resize(variant_defines.size());
 	RasterizerRD::thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
 #else
 	for (int i = 0; i < variant_defines.size(); i++) {

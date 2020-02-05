@@ -552,6 +552,8 @@ public:
 
 	virtual bool free(RID p_rid);
 
+	void get_shaders(Vector<ShaderRD*>& shaders);
+
 	RasterizerSceneForwardRD(RasterizerStorageRD *p_storage);
 	~RasterizerSceneForwardRD();
 };

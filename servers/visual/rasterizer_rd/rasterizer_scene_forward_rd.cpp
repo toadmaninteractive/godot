@@ -2698,3 +2698,7 @@ RasterizerSceneForwardRD::~RasterizerSceneForwardRD() {
 		memdelete_arr(scene_state.reflections);
 	}
 }
+
+void RasterizerSceneForwardRD::get_shaders(Vector<ShaderRD*>& shaders) {
+	shaders.push_back(&shader.scene_shader);
+}

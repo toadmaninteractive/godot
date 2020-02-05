@@ -51,17 +51,17 @@ void main() {
 	vec4 color;
 
 	if (gl_VertexIndex == 0) {
-		vertex = draw_data.points[0];
-		uv = draw_data.uvs[0];
-		color = vec4(unpackHalf2x16(draw_data.colors[0]), unpackHalf2x16(draw_data.colors[1]));
+		vertex = draw_data.points0;
+		uv = draw_data.uvs0;
+		color = vec4(unpackHalf2x16(draw_data.colors0), unpackHalf2x16(draw_data.colors1));
 	} else if (gl_VertexIndex == 1) {
-		vertex = draw_data.points[1];
-		uv = draw_data.uvs[1];
-		color = vec4(unpackHalf2x16(draw_data.colors[2]), unpackHalf2x16(draw_data.colors[3]));
+		vertex = draw_data.points1;
+		uv = draw_data.uvs1;
+		color = vec4(unpackHalf2x16(draw_data.colors2), unpackHalf2x16(draw_data.colors3));
 	} else {
-		vertex = draw_data.points[2];
-		uv = draw_data.uvs[2];
-		color = vec4(unpackHalf2x16(draw_data.colors[4]), unpackHalf2x16(draw_data.colors[5]));
+		vertex = draw_data.points2;
+		uv = draw_data.uvs2;
+		color = vec4(unpackHalf2x16(draw_data.colors4), unpackHalf2x16(draw_data.colors5));
 	}
 	uvec4 bones = uvec4(0, 0, 0, 0);
 
@@ -428,15 +428,15 @@ FRAGMENT_SHADER_CODE
 		uint light_base;
 		if (i < 8) {
 			if (i < 4) {
-				light_base = draw_data.lights[0];
+				light_base = draw_data.lights0;
 			} else {
-				light_base = draw_data.lights[1];
+				light_base = draw_data.lights1;
 			}
 		} else {
 			if (i < 12) {
-				light_base = draw_data.lights[2];
+				light_base = draw_data.lights2;
 			} else {
-				light_base = draw_data.lights[3];
+				light_base = draw_data.lights3;
 			}
 		}
 		light_base >>= (i & 3) * 8;

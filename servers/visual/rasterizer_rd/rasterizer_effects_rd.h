@@ -98,6 +98,7 @@ class RasterizerEffectsRD {
 		float ssao_color[4];
 	};
 
+public:
 	struct Blur {
 		BlurPushConstant push_constant;
 		BlurShaderRD shader;
@@ -105,6 +106,8 @@ class RasterizerEffectsRD {
 		RenderPipelineVertexFormatCacheRD pipelines[BLUR_MODE_MAX];
 
 	} blur;
+
+private:
 
 	enum CubemapRoughnessSource {
 		CUBEMAP_ROUGHNESS_SOURCE_PANORAMA,
@@ -249,6 +252,8 @@ public:
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
+
+	void get_shaders(Vector<ShaderRD*>& shaders);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();
