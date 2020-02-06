@@ -280,10 +280,10 @@ private:
 	ToolButton *search_button;
 	TextureProgress *audio_vu;
 
-	// #ifdef PS4_EDITOR_TOOLS
+#ifdef PS4_EDITOR_TOOLS
 	MenuButton *ps4_menu;
 	void _ps4_menu_option(int p_id);
-	// #endif // PS4_EDITOR_TOOLS
+#endif // PS4_EDITOR_TOOLS
 
 	Timer *screenshot_timer;
 

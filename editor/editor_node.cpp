@@ -4603,7 +4603,7 @@ void EditorNode::_update_layouts_menu() {
 	}
 }
 
-// #ifdef PS4_EDITOR_TOOLS
+#ifdef PS4_EDITOR_TOOLS
 #include "modules/toadman/shader_exporter.h"
 
 void EditorNode::_ps4_menu_option(int p_id)
@@ -4615,7 +4615,7 @@ void EditorNode::_ps4_menu_option(int p_id)
 		} break;
 	}
 }
-// #endif // PS4_EDITOR_TOOLS
+#endif // PS4_EDITOR_TOOLS
 
 void EditorNode::_layout_menu_option(int p_id) {
 
@@ -6273,7 +6273,7 @@ EditorNode::EditorNode() {
 	p->set_item_checked(p->get_item_count() - 1, true);
 	p->connect("id_pressed", this, "_menu_option");
 
-// #ifdef PS4_EDITOR_TOOLS
+#ifdef PS4_EDITOR_TOOLS
 	menu_hb->add_spacer();
 
 	ps4_menu = memnew(MenuButton);
@@ -6287,7 +6287,7 @@ EditorNode::EditorNode() {
 	p->connect("id_pressed", this, "_ps4_menu_option");
 	p->add_item(TTR("Compile Shaders"), 0);
 
-// #endif // PS4_EDITOR_TOOLS
+#endif // PS4_EDITOR_TOOLS
 
 	menu_hb->add_spacer();
 

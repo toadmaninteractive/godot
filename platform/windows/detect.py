@@ -195,6 +195,13 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CCFLAGS=['/Z7'])
         env.AppendUnique(LINKFLAGS=['/DEBUG'])
 
+
+    if (env["ps4_tools"]):
+        env.Append(CPPDEFINES=['PS4_EDITOR_TOOLS'])
+        ps4_common_include_path = os.path.join(os.environ["SCE_ORBIS_SDK_DIR"], 'target', 'include_common')
+        env.Append(CPPPATH=[ps4_common_include_path])
+
+
     ## Compile/link flags
 
     env.AppendUnique(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
@@ -223,6 +230,10 @@ def configure_msvc(env, manual_msvc_config):
             'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32',
             'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt', 'Avrt',
             'dwmapi']
+
+    if (env["ps4_tools"]):
+        env.Append(LIBPATH=[os.getenv("SCE_ORBIS_SDK_DIR") + "/host_tools/lib/"])
+        LIBS += ['libSceGnm', 'libSceGnmx', 'libSceGpuAddress', 'libSceShaderBinary', 'libSceShaderWavePsslc', 'libSceTextureTool']
 
     env.AppendUnique(CPPDEFINES=['VULKAN_ENABLED'])
     if not env['builtin_vulkan']:

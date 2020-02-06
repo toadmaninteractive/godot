@@ -119,6 +119,8 @@ opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
 opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise epsilon (useful to debug the engine)', False))
 
+opts.Add(BoolVariable('ps4_tools', 'Include PS4 tools that requires PS4 SDK installed', False))
+
 # Components
 opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
 opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", True))
