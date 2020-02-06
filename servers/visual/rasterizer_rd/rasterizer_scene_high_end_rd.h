@@ -38,7 +38,7 @@
 #include "servers/visual/rasterizer_rd/shaders/scene_high_end.glsl.gen.h"
 
 class RasterizerSceneHighEndRD : public RasterizerSceneRD {
-
+	
 	enum {
 		SCENE_UNIFORM_SET = 0,
 		RADIANCE_UNIFORM_SET = 1,

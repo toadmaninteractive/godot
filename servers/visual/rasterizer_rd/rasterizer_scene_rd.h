@@ -69,6 +69,8 @@ protected:
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
 
+	virtual void get_shaders(Vector<ShaderRD*>& shaders);
+
 private:
 	VS::ViewportDebugDraw debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	double time_step = 0;
