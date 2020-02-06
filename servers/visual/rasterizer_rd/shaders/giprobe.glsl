@@ -137,7 +137,9 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	float dynamic_range;
 	bool on_mipmap;
 	float propagation;
-	float pad[3];
+	float pad0;
+	float pad1;
+	float pad2;
 } params;
 
 #ifdef MODE_DYNAMIC_LIGHTING
