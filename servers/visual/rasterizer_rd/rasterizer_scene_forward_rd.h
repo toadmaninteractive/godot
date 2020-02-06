@@ -37,7 +37,7 @@
 #include "servers/visual/rasterizer_rd/shaders/scene_forward.glsl.gen.h"
 
 class RasterizerSceneForwardRD : public RasterizerSceneRD {
-
+	
 	/* Shader */
 
 	enum ShaderVersion {

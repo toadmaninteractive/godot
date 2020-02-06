@@ -60,6 +60,7 @@ protected:
 
 	virtual void _debug_giprobe(RID p_gi_probe, RenderingDevice::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 
+	virtual void get_shaders(Vector<ShaderRD*>& shaders);
 private:
 	int roughness_layers;
 
