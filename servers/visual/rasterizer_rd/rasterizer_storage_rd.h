@@ -1125,8 +1125,6 @@ public:
 
 	RasterizerEffectsRD *get_effects();
 
-	void get_shaders(Vector<ShaderRD*>& shaders);
-
 	RasterizerStorageRD();
 	~RasterizerStorageRD();
 };

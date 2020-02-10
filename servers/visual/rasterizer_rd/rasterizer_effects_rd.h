@@ -253,8 +253,6 @@ public:
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
 
-	void get_shaders(Vector<ShaderRD*>& shaders);
-
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();
 };
