@@ -33,7 +33,7 @@ ShaderExporter::~ShaderExporter() {
 }
 
 void ShaderExporter::export_shaders() {
-    // Create the shader-folder if it does not exist
+    /*// Create the shader-folder if it does not exist
     DirAccess *da = DirAccess::open("res://");
     if (da->change_dir(".shaders") != OK) {
         Error err = da->make_dir(".shaders");
@@ -90,19 +90,19 @@ void ShaderExporter::export_shaders() {
                 compile_pssl(file_name, stage_id, config);
             }   
         }
-    }
+    }*/
 }
 
 std::string ShaderExporter::spirv_to_hlsl(uint32_t* spirv_data, size_t size) {
-    spirv_cross::CompilerHLSL hlsl(spirv_data, size);
+    //spirv_cross::CompilerHLSL hlsl(spirv_data, size);
 
-    spirv_cross::CompilerHLSL::Options opts;
-    opts.shader_model = 50;
-    opts.point_size_compat = true;
-    opts.point_coord_compat = true;
-    hlsl.set_hlsl_options(opts);
-
-    return hlsl.compile();
+    //spirv_cross::CompilerHLSL::Options opts;
+    //opts.shader_model = 50;
+    //opts.point_size_compat = true;
+    //opts.point_coord_compat = true;
+    //hlsl.set_hlsl_options(opts);
+    return "";
+    //return hlsl.compile();
 }
 
 

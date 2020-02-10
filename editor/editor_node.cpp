@@ -5373,7 +5373,6 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_dock_tab_changed", &EditorNode::_dock_tab_changed);
 
 	ClassDB::bind_method("_layout_menu_option", &EditorNode::_layout_menu_option);
-	ClassDB::bind_method("_ps4_menu_option", &EditorNode::_ps4_menu_option);
 
 	ClassDB::bind_method("set_current_scene", &EditorNode::set_current_scene);
 	ClassDB::bind_method("set_current_version", &EditorNode::set_current_version);
