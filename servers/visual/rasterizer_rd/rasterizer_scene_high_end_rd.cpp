@@ -2701,7 +2701,7 @@ RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
 	}
 }
 
-void RasterizerSceneForwardRD::get_shaders(Vector<ShaderRD*>& shaders) {
+void RasterizerSceneHighEndRD::get_shaders(Vector<ShaderRD*>& shaders) {
 	shaders.push_back(&shader.scene_shader);
 	RasterizerSceneRD::get_shaders(shaders);
 }

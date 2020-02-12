@@ -1,7 +1,7 @@
 #include "shader_exporter.h"
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
 #include "servers/visual/rasterizer_rd/rasterizer_canvas_rd.h"
-#include "servers/visual/rasterizer_rd/rasterizer_scene_forward_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_scene_high_end_rd.h"
 #include "servers/visual/visual_server_globals.h"
 #include "core/string_builder.h"
 #include "core/os/dir_access.h"
@@ -46,7 +46,7 @@ void ShaderExporter::export_shaders() {
 
     RasterizerStorageRD* storage = (RasterizerStorageRD*)VSG::storage;
     RasterizerCanvasRD* canvas = (RasterizerCanvasRD*)VSG::canvas_render;
-    RasterizerSceneForwardRD* scene = (RasterizerSceneForwardRD*)VSG::scene_render;
+    RasterizerSceneHighEndRD* scene = (RasterizerSceneHighEndRD*)VSG::scene_render;
 
     // Fetch all the builtin shaders
     Vector<ShaderRD*> shaders;
