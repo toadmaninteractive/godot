@@ -105,7 +105,7 @@ private:
 	};
 
 	PoolVector<uint8_t> cluster_data;
-	RID cluster_texture;
+	RID cluster_buffer;
 
 	struct SortID {
 		uint32_t cell_index;
@@ -281,7 +281,7 @@ public:
 
 	void setup(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
 
-	RID get_cluster_texture() const;
+	RID get_cluster_buffer() const;
 	RID get_cluster_indices_buffer() const;
 
 	LightClusterBuilder();

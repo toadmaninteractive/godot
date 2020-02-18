@@ -2210,8 +2210,8 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 10;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.ids.push_back(cluster_builder.get_cluster_texture());
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.ids.push_back(cluster_builder.get_cluster_buffer());
 			uniforms.push_back(u);
 		}
 		{

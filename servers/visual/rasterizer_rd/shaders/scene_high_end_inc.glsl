@@ -222,7 +222,10 @@ layout(set = 0, binding = 9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TE
 #define CLUSTER_POINTER_MASK ((1 << CLUSTER_COUNTER_SHIFT) - 1)
 #define CLUSTER_COUNTER_MASK 0xfff
 
-layout(set = 0, binding = 10) uniform utexture3D cluster_texture;
+layout(set = 0, binding = 10, std430) buffer ClusterBuffer {
+	uvec4 cells[];
+}
+cluster_buffer;
 
 layout(set = 0, binding = 11, std430) buffer ClusterData {
 	uint indices[];
