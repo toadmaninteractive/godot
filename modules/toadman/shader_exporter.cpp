@@ -6,6 +6,7 @@
 #include "core/string_builder.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
+#include "editor/editor_file_system.h"
 
 #include <spirv_hlsl.hpp>
 #include <shader.h>
@@ -32,6 +33,12 @@ ShaderExporter::~ShaderExporter() {
 
 }
 
+bool potential_shader(const StringName file_type) {
+    return file_type == "Shader" ||
+           file_type == "VisualShader" ||
+           file_type == "ShaderMaterial";
+}
+
 void ShaderExporter::export_shaders() {
     // Create the shader-folder if it does not exist
     DirAccess *da = DirAccess::open("res://");
@@ -40,60 +47,60 @@ void ShaderExporter::export_shaders() {
         if (err) {
             memdelete(da);
             ERR_FAIL_MSG("Failed to create 'res://.shaders' folder.");
+            return;
         }
     }
     memdelete(da);
 
-    RasterizerStorageRD* storage = (RasterizerStorageRD*)VSG::storage;
-    RasterizerCanvasRD* canvas = (RasterizerCanvasRD*)VSG::canvas_render;
-    RasterizerSceneHighEndRD* scene = (RasterizerSceneHighEndRD*)VSG::scene_render;
+    // Iterate over all files in the project
+    EditorFileSystemDirectory* root_path = EditorFileSystem::get_singleton()->get_filesystem();
 
-    // Fetch all the builtin shaders
-    Vector<ShaderRD*> shaders;
-    storage->get_shaders(shaders);
-    canvas->get_shaders(shaders);
-    scene->get_shaders(shaders);
-
-    // Iterate through all shaders, variants and stages
-    //      Variant = Unique set of defines
-    //      Stage = Vertex, Fragment or Compute shader
-	for (int i = 0; i < shaders.size(); ++i) {
-        int num_variants = shaders[i]->all_stages.size();
-        for (int j = 0; j < num_variants; ++j) {
-            int num_stages = shaders[i]->all_stages[j].size();
-            for (int k = 0; k < num_stages; ++k) {
-                // Get the data for this variant and stage of the shader
-                const RD::ShaderStageData& stage_data = shaders[i]->all_stages[j][k];
-                size_t data_size = stage_data.spir_v.size() / sizeof(uint32_t);
-                uint32_t* spirv_data = (uint32_t*)stage_data.spir_v.read().ptr();
-                int stage_id = stage_data.shader_stage;
-    
-                // Compile to PSSL (SpirV -> HLSL -> PSSL)
-                CompilationConfiguration config;
-                config.unroll = false;
- 
-                std::string hlsl_source = spirv_to_hlsl(spirv_data, data_size);
-                std::string pssl_source = hlsl_to_pssl(hlsl_source, config);
-
-                // Generate filename for this data                
-                String name = shaders[i]->get_name();                
-                char file_name[256];
-                sprintf(file_name, "res://.shaders/%ws_%d_%d.hlsl", name.ptr(), j, stage_id);
-
-                // Write the compiled data to file
-                FileAccess* fa = FileAccess::open(file_name, FileAccess::WRITE);
-                fa->store_buffer((uint8_t*)pssl_source.c_str(), pssl_source.size());
-                fa->close();
-                memdelete(fa);
-				
-                // Compile the PSSL to binary format
-                compile_pssl(file_name, stage_id, config);
-            }   
+    // Go through and load all resources that might have shaders in them
+    // This will make sure they are caught in our custom cache.
+    int num_files = root_path->get_file_count();
+    for (int i = 0; i < num_files; ++i) {
+        StringName file_type = root_path->get_file_type(i);
+        String file_path = root_path->get_file_path(i);
+		
+        if (potential_shader(file_type)) {
+            Ref<Resource> res = ResourceLoader::load(file_path);            
         }
+    }
+
+    // Now all shaders should have been compiled and we have the SPIR-V
+    // code for all of them.
+    // Now we just need to iterate over them, generate PSSL bytecode from them
+    // and save them to disk.
+    auto* node = RD::get_singleton()->compiled_shader_cache.front();
+    while (node != nullptr)	{
+		String hash = node->key();
+        RenderingDevice::CompiledShaderCacheEntry entry = node->value();
+
+        CompilationConfiguration config;
+        config.unroll = false;
+
+        // Compile to PSSL (SpirV -> HLSL -> PSSL)
+        std::string hlsl_source = spirv_to_hlsl(entry.data.read().ptr(), entry.size);
+        std::string pssl_source = hlsl_to_pssl(hlsl_source, config);
+
+        // Compile the PSSL to binary format
+        // compile_pssl(file_name, stage_id, config);
+
+        // Generate filename for this data                        
+        char file_name[256];
+        sprintf(file_name, "res://.shaders/%ws.pssl", hash.c_str());
+
+        // Write the compiled data to file
+        FileAccess* fa = FileAccess::open(file_name, FileAccess::WRITE);
+        fa->store_buffer((uint8_t*)pssl_source.c_str(), pssl_source.size());
+        fa->close();
+        memdelete(fa);
+
+        node = node->next();
     }
 }
 
-std::string ShaderExporter::spirv_to_hlsl(uint32_t* spirv_data, size_t size) {
+std::string ShaderExporter::spirv_to_hlsl(const uint32_t* spirv_data, size_t size) {
     spirv_cross::CompilerHLSL hlsl(spirv_data, size);
 
     spirv_cross::CompilerHLSL::Options opts;

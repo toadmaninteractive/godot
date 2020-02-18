@@ -1024,6 +1024,16 @@ public:
 	static RenderingDevice *get_singleton();
 
 	RenderingDevice();
+
+#ifdef PS4_EDITOR_TOOLS
+	struct CompiledShaderCacheEntry {
+		PoolVector<uint32_t> data;	// SPIR-V
+		uint32_t size;				// Size of 'data'
+		String orig_source_code;	// TEMP for debugging
+	};
+
+	Map<String, CompiledShaderCacheEntry> compiled_shader_cache;
+#endif // PS4_EDITOR_TOOLS
 };
 
 typedef RenderingDevice RD;

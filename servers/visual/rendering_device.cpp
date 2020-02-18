@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rendering_device.h"
+#include "core/crypto/crypto_core.h"
 
 RenderingDevice *RenderingDevice::singleton = NULL;
 
@@ -56,7 +57,35 @@ PoolVector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_st
 
 	ERR_FAIL_COND_V(!compile_function, PoolVector<uint8_t>());
 
+#ifdef PS4_EDITOR_TOOLS
+	PoolVector<uint8_t> data = compile_function(p_stage, p_source_code, p_language, r_error);
+
+	// Cache the data so that we can fetch it
+	uint32_t* uint_data = (uint32_t*)data.read().ptr();
+
+	CompiledShaderCacheEntry entry;
+	entry.size = data.size() / sizeof(uint32_t);
+	entry.data.resize(entry.size);
+	entry.orig_source_code = p_source_code;
+
+	if (entry.size == 0) {
+		return data;
+	}
+	
+	PoolVector<uint32_t>::Write write = entry.data.write();
+	
+	for (uint32_t i = 0; i < entry.size; ++i) {
+		write[i] = uint_data[i];
+	}
+
+	unsigned char hash[16];
+	CryptoCore::md5(data.read().ptr(), data.size(), hash);
+	compiled_shader_cache.insert(String::md5(hash), entry);
+
+	return data;
+#else
 	return compile_function(p_stage, p_source_code, p_language, r_error);
+#endif
 }
 
 RenderingDevice::RenderingDevice() {
