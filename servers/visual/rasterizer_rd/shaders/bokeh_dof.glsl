@@ -49,7 +49,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 
 	bool use_jitter;
 	float jitter_seed;
-	uint pad[2];
+	uint pad0;
+	uint pad1;
 }
 params;
 
