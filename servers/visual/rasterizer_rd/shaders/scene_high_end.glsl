@@ -434,12 +434,6 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 	return mix(vec3(dielectric), albedo, vec3(metallic));
 }
 
-float linearDepth(float depthSample){
-    float depthRange = 2.0 * depthSample - 1.0;
-    float linear = 2.0 * scene_data.z_near * scene_data.z_far / (scene_data.z_far + scene_data.z_near - depthRange * (scene_data.z_far - scene_data.z_near));
-    return linear;
-}
-
 void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, vec3 attenuation, vec3 diffuse_color, float roughness, float metallic, float specular, float specular_blob_intensity,
 #ifdef LIGHT_TRANSMISSION_USED
 		vec3 transmission,
@@ -1410,9 +1404,10 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 	
-	uint cell_x = uint(screen_uv.x * 15.0f);
-	uint cell_y = uint(screen_uv.y * 7.0f);
-	uint cell_z = uint(((abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near)) * 23.0f);
+	uint cell_x = min(uint(screen_uv.x * 16.0f), 15);
+	uint cell_y = min(uint(screen_uv.y * 8.0f), 7);
+	float depth_frag = ((abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near));
+	uint cell_z = min(uint(depth_frag * 24.0f), 23);
 
 	uint offset = cell_z * (16u * 8u) + cell_y * 16u + cell_x;
 	uvec4 cluster_cell = cluster_buffer.cells[offset];
