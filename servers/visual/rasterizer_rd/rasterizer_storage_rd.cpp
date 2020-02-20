@@ -3926,10 +3926,6 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 
 void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 
-	if (rt->size.width == 0 || rt->size.height == 0) {
-		return;
-	}
-
 	if (rt->texture.is_null()) {
 		//create a placeholder until updated
 		rt->texture = texture_2d_placeholder_create();
@@ -3938,6 +3934,10 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 	}
 
 	_clear_render_target(rt);
+
+	if (rt->size.width == 0 || rt->size.height == 0) {
+		return;
+	}
 
 	//until we implement suport for HDR monitors (and render target is attached to screen), this is enough.
 	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
