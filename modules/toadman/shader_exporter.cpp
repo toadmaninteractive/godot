@@ -18,6 +18,7 @@ enum ShaderType { VS = 0, HS, DS, GS, PS, CS, N_SHADER_TYPES };
 
 struct CompilationConfiguration {
     bool unroll;
+    int stage;
 };
 
 unsigned enable_stage(ShaderType stage)
@@ -78,13 +79,14 @@ void ShaderExporter::export_shaders() {
 
         CompilationConfiguration config;
         config.unroll = false;
+        config.stage = entry.stage;
 
         // Compile to PSSL (SpirV -> HLSL -> PSSL)
         std::string hlsl_source = spirv_to_hlsl(entry.data.read().ptr(), entry.size);
         std::string pssl_source = hlsl_to_pssl(hlsl_source, config);
 
         // Compile the PSSL to binary format
-        // compile_pssl(file_name, stage_id, config);
+        compile_pssl(pssl_source, config);
 
         // Generate filename for this data                        
         char file_name[256];
@@ -151,15 +153,18 @@ std::string ShaderExporter::hlsl_to_pssl(const std::string& hlsl, CompilationCon
     return output;
 }
 
-void ShaderExporter::compile_pssl(const char* file_path, int stage, const CompilationConfiguration& config) {
+void ShaderExporter::compile_pssl(const std::string& pssl, const CompilationConfiguration& config) {
     // Get the type of stage for this file
 
     sce::Shader::Wave::Psslc::Options options;
     sce::Shader::Wave::Psslc::initializeOptions(&options, SCE_WAVE_API_VERSION);
 
-    options.mainSourceFile = file_path;
+    // Set the source-file to dymmy since we will supply the
+    // code from memory instead of disk (through user-data)
+    options.mainSourceFile = "dummy";
     options.entryFunctionName = "main";
     options.unrollAllLoops = config.unroll;
+    options.userData = (void*)&pssl;
 
     static uint32_t suppressed_warnings[] = {
 			20088, // unreferenced local variable
@@ -169,13 +174,13 @@ void ShaderExporter::compile_pssl(const char* file_path, int stage, const Compil
     options.suppressedWarningsCount = n_suppressed_warnings;
 	options.suppressedWarnings = suppressed_warnings;
 
-    if (stage == RD::ShaderStage::SHADER_STAGE_VERTEX) {
+    if (config.stage == RD::ShaderStage::SHADER_STAGE_VERTEX) {
         options.targetProfile = sce::Shader::Wave::Psslc::kTargetProfileVsVs;
     }
-    else if (stage == RD::ShaderStage::SHADER_STAGE_FRAGMENT) {
+    else if (config.stage == RD::ShaderStage::SHADER_STAGE_FRAGMENT) {
         options.targetProfile = sce::Shader::Wave::Psslc::kTargetProfilePs;
     } 
-    else if (stage == RD::ShaderStage::SHADER_STAGE_COMPUTE) {
+    else if (config.stage == RD::ShaderStage::SHADER_STAGE_COMPUTE) {
         options.targetProfile = sce::Shader::Wave::Psslc::kTargetProfileCs;
     }
     else {        
@@ -192,18 +197,12 @@ void ShaderExporter::compile_pssl(const char* file_path, int stage, const Compil
 			const char **errorString)
 		{
             auto src_file = (sce::Shader::Wave::Psslc::SourceFile*)memalloc(sizeof(sce::Shader::Wave::Psslc::SourceFile));
-            
-            FileAccess* fa = FileAccess::open(fileName, FileAccess::READ);
-            int len = fa->get_len();
-            uint8_t* data = (uint8_t*)memalloc(len * sizeof(uint8_t));
-            fa->get_buffer(data, len);
-            fa->close();
-            memdelete(fa);
-
+                        
+            std::string* pssl_code = (std::string*)user_data;
 
             src_file->fileName = fileName;
-            src_file->size = len;
-            src_file->text = (const char*)data;
+            src_file->size = pssl_code->size();//pssl.size();
+            src_file->text = pssl_code->c_str();//pssl.c_str();
 
 			return src_file;
 		};
@@ -213,7 +212,6 @@ void ShaderExporter::compile_pssl(const char* file_path, int stage, const Compil
         const sce::Shader::Wave::Psslc::OptionsBase *compileOptions, 
         void *user_data)
 		{
-            memfree((void*)file->text);
             memfree((void*)file);
 		};
 
@@ -223,7 +221,7 @@ void ShaderExporter::compile_pssl(const char* file_path, int stage, const Compil
     const sce::Shader::Wave::Psslc::Output *output = sce::Shader::Wave::Psslc::run(&options, &callbacks);
 
     if (output->diagnosticCount > 0) {
-        printf("Errors in shader: %s\n", file_path);
+        printf("Errors in shader\n");
 
         for (int i = 0; i < output->diagnosticCount; ++i) {
             if (output->diagnostics[i].level == 0) {
