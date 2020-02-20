@@ -1030,6 +1030,7 @@ public:
 		PoolVector<uint32_t> data;	// SPIR-V
 		uint32_t size;				// Size of 'data'
 		String orig_source_code;	// TEMP for debugging
+		int stage;					// Type of shader (Vertex, Fragment etc)
 	};
 
 	Map<String, CompiledShaderCacheEntry> compiled_shader_cache;

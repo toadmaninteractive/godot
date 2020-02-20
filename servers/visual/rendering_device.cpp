@@ -67,6 +67,7 @@ PoolVector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_st
 	entry.size = data.size() / sizeof(uint32_t);
 	entry.data.resize(entry.size);
 	entry.orig_source_code = p_source_code;
+	entry.stage = p_stage;
 
 	if (entry.size == 0) {
 		return data;
