@@ -50,6 +50,9 @@ void ShaderExporter::export_shaders() {
             ERR_FAIL_MSG("Failed to create 'res://.shaders' folder.");
             return;
         }
+    } else {
+        // If the folder exists, remove all the files in it
+        da->erase_contents_recursive();
     }
     memdelete(da);
 
@@ -81,20 +84,45 @@ void ShaderExporter::export_shaders() {
         config.unroll = false;
         config.stage = entry.stage;
 
-        // Compile to PSSL (SpirV -> HLSL -> PSSL)
+        // TEMP: Store the generated PSSL as well so that we can debug errors
+        char temp_pssl_file_name[256];
+        sprintf(temp_pssl_file_name, "res://.shaders/%ws.pssl", hash.c_str());
+
+        char temp_hlsl_file_name[256];
+        sprintf(temp_hlsl_file_name, "res://.shaders/%ws.hlsl", hash.c_str());
+
+        printf("Compiling %s\n", temp_pssl_file_name);
+
+        // Compile to PSSL (SpirV -> HLSL -> PSSL -> Bytecode)
         std::string hlsl_source = spirv_to_hlsl(entry.data.read().ptr(), entry.size);
         std::string pssl_source = hlsl_to_pssl(hlsl_source, config);
 
-        // Compile the PSSL to binary format
-        compile_pssl(pssl_source, config);
+        FileAccess* fa_tmp = FileAccess::open(temp_pssl_file_name, FileAccess::WRITE);
+        fa_tmp->store_buffer((uint8_t*)pssl_source.c_str(), pssl_source.size());
+        fa_tmp->close();
+        memdelete(fa_tmp);
 
-        // Generate filename for this data                        
+        FileAccess* fa_tmp2 = FileAccess::open(temp_hlsl_file_name, FileAccess::WRITE);
+        fa_tmp2->store_buffer((uint8_t*)hlsl_source.c_str(), hlsl_source.size());
+        fa_tmp2->close();
+        memdelete(fa_tmp2);
+
+        std::string pssl_bytecode = compile_pssl(pssl_source, config);
+        
+        if (pssl_bytecode.size() == 0) {
+            node = node->next();
+            continue;
+        }
+        
+        
+
+        // Generate filename for this data
         char file_name[256];
-        sprintf(file_name, "res://.shaders/%ws.pssl", hash.c_str());
+        sprintf(file_name, "res://.shaders/%ws.psslb", hash.c_str());
 
         // Write the compiled data to file
         FileAccess* fa = FileAccess::open(file_name, FileAccess::WRITE);
-        fa->store_buffer((uint8_t*)pssl_source.c_str(), pssl_source.size());
+        fa->store_buffer((uint8_t*)pssl_bytecode.c_str(), pssl_bytecode.size());
         fa->close();
         memdelete(fa);
 
@@ -130,6 +158,7 @@ std::string ShaderExporter::hlsl_to_pssl(const std::string& hlsl, CompilationCon
     SHADER_REPLACE("SV_Position", "S_POSITION");
     SHADER_REPLACE("SV_InstanceID", "S_INSTANCE_ID");
     SHADER_REPLACE("SV_Target", "S_TARGET_OUTPUT");
+    SHADER_REPLACE("SV_IsFrontFace", "S_FRONT_FACE");
     SHADER_REPLACE("RWTexture3D", "RW_Texture3D");
     SHADER_REPLACE("RWTexture2D", "RW_Texture2D");
     SHADER_REPLACE("SampleLevel", "SampleLOD");
@@ -139,6 +168,10 @@ std::string ShaderExporter::hlsl_to_pssl(const std::string& hlsl, CompilationCon
     SHADER_REPLACE("nointerpolation", "nointerp");
     SHADER_REPLACE("numthreads", "NUM_THREADS");
     SHADER_REPLACE("SV_DispatchThreadID", "S_DISPATCH_THREAD_ID");
+    SHADER_REPLACE("SV_GroupThreadID", "S_GROUP_THREAD_ID");
+    SHADER_REPLACE("groupshared", "thread_group_memory");
+    SHADER_REPLACE("AllMemoryBarrier", "ThreadGroupMemoryBarrier");    
+    SHADER_REPLACE("GroupMemoryBarrierWithGroupSync", "ThreadGroupMemoryBarrierSync");    
     SHADER_REPLACE("<unorm ", "<");
 
     // Remove registers
@@ -150,10 +183,14 @@ std::string ShaderExporter::hlsl_to_pssl(const std::string& hlsl, CompilationCon
         config.unroll = true;
     }
 
+    if (std::regex_search(output, std::regex("Texture3D<.*> .*\\[.*\\];"))) {
+        config.unroll = true;
+    }
+
     return output;
 }
 
-void ShaderExporter::compile_pssl(const std::string& pssl, const CompilationConfiguration& config) {
+std::string ShaderExporter::compile_pssl(const std::string& pssl, const CompilationConfiguration& config) {
     // Get the type of stage for this file
 
     sce::Shader::Wave::Psslc::Options options;
@@ -168,6 +205,8 @@ void ShaderExporter::compile_pssl(const std::string& pssl, const CompilationConf
 
     static uint32_t suppressed_warnings[] = {
 			20088, // unreferenced local variable
+            20087, // unreferenced formal parameter
+            8201, // ptoentially using uninitialized variabel
 		};
     static uint32_t n_suppressed_warnings = sizeof(suppressed_warnings) / sizeof(suppressed_warnings[0]);
 
@@ -184,7 +223,7 @@ void ShaderExporter::compile_pssl(const std::string& pssl, const CompilationConf
         options.targetProfile = sce::Shader::Wave::Psslc::kTargetProfileCs;
     }
     else {        
-        ERR_FAIL();
+        ERR_FAIL_V("");
     }
 
     sce::Shader::Wave::Psslc::CallbackList callbacks;
@@ -240,4 +279,13 @@ void ShaderExporter::compile_pssl(const std::string& pssl, const CompilationConf
             printf("[%d] %s\n", output->diagnostics[i].code, output->diagnostics[i].message);
         }        
     }
+
+    if (output->programSize == 0) {
+        return "";
+    }
+
+    std::string output_data;
+    output_data.resize(output->programSize);
+    output_data.append((const char*)output->programData, output->programSize * sizeof(uint8_t));
+    return output_data;
 }
