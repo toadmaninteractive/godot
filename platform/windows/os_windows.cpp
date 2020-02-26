@@ -44,6 +44,10 @@
 #include "servers/visual/rasterizer_rd/rasterizer_rd.h"
 #endif
 
+#if defined(PS4_EDITOR_TOOLS)
+#include "modules/toadman/rendering_device_win_gnm.h"
+#endif
+
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
@@ -1475,7 +1479,11 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		}
 
 		//temporary
+#if defined(PS4_EDITOR_TOOLS)
+		rendering_device_vulkan = memnew(RenderingDeviceWinGNM);
+#else
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+#endif		
 		rendering_device_vulkan->initialize(context_vulkan);
 
 		RasterizerRD::make_current();
