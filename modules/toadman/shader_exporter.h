@@ -5,8 +5,8 @@
 struct CompilationConfiguration;
 class ShaderExporter {
 public:
-    ShaderExporter();
-    ~ShaderExporter();
+    ShaderExporter() {}
+    ~ShaderExporter() {}
 
     void export_shaders();
 

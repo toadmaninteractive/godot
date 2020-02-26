@@ -14,25 +14,10 @@
 
 #include <regex>
 
-enum ShaderType { VS = 0, HS, DS, GS, PS, CS, N_SHADER_TYPES };
-
 struct CompilationConfiguration {
     bool unroll;
     int stage;
 };
-
-unsigned enable_stage(ShaderType stage)
-{
-    return 1 << stage;
-}
-
-ShaderExporter::ShaderExporter() {
-
-}
-
-ShaderExporter::~ShaderExporter() {
-
-}
 
 bool potential_shader(const StringName file_type) {
     return file_type == "Shader" ||
