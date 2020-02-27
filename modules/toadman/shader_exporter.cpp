@@ -22,7 +22,8 @@ struct CompilationConfiguration {
 bool potential_shader(const StringName file_type) {
     return file_type == "Shader" ||
            file_type == "VisualShader" ||
-           file_type == "ShaderMaterial";
+           file_type == "ShaderMaterial" ||
+           file_type == "PackedScene";
 }
 
 void ShaderExporter::export_shaders() {
