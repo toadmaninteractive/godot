@@ -271,7 +271,7 @@ std::string ShaderExporter::compile_pssl(const std::string& pssl, const Compilat
     }
 
     std::string output_data;
-    output_data.resize(output->programSize);
+    output_data.reserve(output->programSize);
     output_data.append((const char*)output->programData, output->programSize * sizeof(uint8_t));
     return output_data;
 }
