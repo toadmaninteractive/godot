@@ -23,62 +23,80 @@ std::string spirv(const uint32_t *spirv_data, size_t size) {
 	SpvReflectResult result = spvReflectCreateShaderModule(size * sizeof(uint32_t), spirv_data, &module);
 	ERR_FAIL_COND_V(result != SPV_REFLECT_RESULT_SUCCESS, "");
 
+	Dictionary reflected_data;
+
 	uint32_t binding_count = 0;
 	result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, NULL);
 	ERR_FAIL_COND_V(result != SPV_REFLECT_RESULT_SUCCESS, "");
+	if (binding_count > 0) {
 
-	if (binding_count == 0)
-		return "";
+		//Parse bindings
 
-	//Parse bindings
+		Vector<SpvReflectDescriptorBinding *> bindings;
+		bindings.resize(binding_count);
+		result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings.ptrw());
+		ERR_FAIL_COND_V(result != SPV_REFLECT_RESULT_SUCCESS, "");
 
-	Vector<SpvReflectDescriptorBinding *> bindings;
-	bindings.resize(binding_count);
-	result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings.ptrw());
-	ERR_FAIL_COND_V(result != SPV_REFLECT_RESULT_SUCCESS, "");
+		struct VariantBinding {
+			Variant name;
+			Variant bind_point;
+		};
 
-	struct VariantBinding {
-		Variant name;
-		Variant bind_point;
-	};
+		struct Set {
+			Vector<VariantBinding> bindings;
+		};
 
-	struct Set {
-		Vector<VariantBinding> bindings;
-	};
+		Vector<Set> sets;
+		for (uint32_t b = 0; b < binding_count; b++) {
+			const SpvReflectDescriptorBinding &binding = *bindings[b];
+			if (sets.size() <= binding.set)
+				sets.resize(binding.set + 1);
 
-	Vector<Set> sets;
-	for (uint32_t b = 0; b < binding_count; b++) {
-		const SpvReflectDescriptorBinding &binding = *bindings[b];
-		if (sets.size() <= binding.set)
-			sets.resize(binding.set + 1);
-
-		Set &set = sets.write[binding.set];
-		VariantBinding vb;
-		vb.name = Variant(binding.name);
-		vb.bind_point = Variant(binding.binding);
-		set.bindings.push_back(vb);
-	}
-
-	Array vsets;
-	for (uint32_t i = 0; i < sets.size(); ++i) {
-		const Set &set = sets[i];
-		if (set.bindings.size() == 0)
-			continue;
-
-		Dictionary vset;
-		Array vbindings;
-		vset[(Variant("set"))] = Variant(i);
-		for (uint32_t j = 0; j < set.bindings.size(); ++j) {
-			Dictionary vbinding;
-			vbinding[Variant("name")] = set.bindings[j].name;
-			vbinding[Variant("bind_point")] = set.bindings[j].bind_point;
-			vbindings.push_back(vbinding);
+			Set &set = sets.write[binding.set];
+			VariantBinding vb;
+			vb.name = Variant(binding.name);
+			vb.bind_point = Variant(binding.binding);
+			set.bindings.push_back(vb);
 		}
-		vset[Variant("bindings")] = vbindings;
-		vsets.push_back(vset);
+
+		Array vsets;
+		for (uint32_t i = 0; i < sets.size(); ++i) {
+			const Set &set = sets[i];
+			if (set.bindings.size() == 0)
+				continue;
+
+			Dictionary vset;
+			Array vbindings;
+			vset[(Variant("set"))] = Variant(i);
+			for (uint32_t j = 0; j < set.bindings.size(); ++j) {
+				Dictionary vbinding;
+				vbinding[Variant("name")] = set.bindings[j].name;
+				vbinding[Variant("bind_point")] = set.bindings[j].bind_point;
+				vbindings.push_back(vbinding);
+			}
+			vset[Variant("bindings")] = vbindings;
+			vsets.push_back(vset);
+		}
+
+		reflected_data[Variant("sets")] = vsets;
 	}
 
-	return JSON::print(vsets).utf8().ptr();
+	uint32_t push_constant_count = 0;
+	result = spvReflectEnumeratePushConstantBlocks(&module, &push_constant_count, NULL);
+	ERR_FAIL_COND_V(result != SPV_REFLECT_RESULT_SUCCESS, "");
+	if (push_constant_count > 0) {
+		push_constant_count = 1;
+		SpvReflectBlockVariable *push_constant;
+		result = spvReflectEnumeratePushConstantBlocks(&module, &push_constant_count, &push_constant);
+
+		Dictionary vpush_constant;
+		vpush_constant[Variant("name")] = push_constant->name;
+		vpush_constant[Variant("size")] = push_constant->size;
+
+		reflected_data[Variant("push_constant")] = vpush_constant;
+	}
+
+	return JSON::print(reflected_data).utf8().ptr();
 }
 } // namespace reflect
 
@@ -148,7 +166,7 @@ void ShaderExporter::export_shaders() {
 		printf("Compiling %s\n", temp_pssl_file_name);
 
 		// Relect SpirV
-		std::string spirv_sets = reflect::spirv(entry.data.read().ptr(), entry.size);
+		std::string spirv_reflected_data = reflect::spirv(entry.data.read().ptr(), entry.size);
 
 		// Compile to PSSL (SpirV -> HLSL -> PSSL -> Bytecode)
 		std::string hlsl_source = spirv_to_hlsl(entry.data.read().ptr(), entry.size);
@@ -177,15 +195,15 @@ void ShaderExporter::export_shaders() {
 
 		// File layout: header|sets|psslb
 		struct Header {
-			uint32_t spirv_sets_size;
+			uint32_t spirv_reflected_data_size;
 		};
 
-		const size_t file_size = sizeof(Header) + spirv_sets.size() + pssl_bytecode.size();
+		const size_t file_size = sizeof(Header) + spirv_reflected_data.size() + pssl_bytecode.size();
 		uint8_t *file_output = (uint8_t *)memalloc(file_size);
-		Header header = { spirv_sets.size() };
+		Header header = { spirv_reflected_data.size() };
 		memcpy(file_output, &header, sizeof(Header));
-		memcpy(file_output + sizeof(Header), spirv_sets.c_str(), spirv_sets.size());
-		memcpy(file_output + sizeof(Header) + spirv_sets.size(), pssl_bytecode.c_str(), pssl_bytecode.size());
+		memcpy(file_output + sizeof(Header), spirv_reflected_data.c_str(), spirv_reflected_data.size());
+		memcpy(file_output + sizeof(Header) + spirv_reflected_data.size(), pssl_bytecode.c_str(), pssl_bytecode.size());
 
 		// Write the compiled data to file
 		FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
