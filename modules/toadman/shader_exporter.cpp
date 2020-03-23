@@ -54,7 +54,10 @@ std::string spirv(const uint32_t *spirv_data, size_t size) {
 
 			Set &set = sets.write[binding.set];
 			VariantBinding vb;
-			vb.name = Variant(binding.name);
+			if (binding.resource_type == SPV_REFLECT_RESOURCE_FLAG_CBV)
+				vb.name = Variant(binding.type_description->type_name);
+			else
+				vb.name = Variant(binding.name);
 			vb.bind_point = Variant(binding.binding);
 			set.bindings.push_back(vb);
 		}
