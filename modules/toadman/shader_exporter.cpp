@@ -27,9 +27,15 @@ struct CompilationConfiguration {
 	int stage;
 };
 
+struct PsslCompileResult {
+	std::string program;
+	std::string sdb_ext;
+	std::string sdb;
+};
+
 std::string spirv_to_hlsl(const uint32_t *spirv_data, size_t size);
 std::string hlsl_to_pssl(const std::string &hlsl, CompilationConfiguration &config);
-std::string compile_pssl(const std::string &pssl, const CompilationConfiguration &config);
+PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfiguration &config);
 std::string build_metadata(const uint32_t *spirv_data, size_t spirv_size, const std::string &pssl_bytecode);
 
 bool potential_shader(const StringName file_type) {
@@ -106,41 +112,60 @@ void ShaderExporter::export_shaders() {
 		fa_tmp2->close();
 		memdelete(fa_tmp2);
 
-		std::string pssl_bytecode = compile_pssl(pssl_source, config);
-		if (pssl_bytecode.size() == 0) {
+		PsslCompileResult pssl_compile_res = compile_pssl(pssl_source, config);
+		if (pssl_compile_res.program.size() == 0) {
 			node = node->next();
 			continue;
 		}
 
-		std::string metadata = build_metadata(entry.data.read().ptr(), entry.size, pssl_bytecode);
-		if (metadata.size() == 0) {
-			node = node->next();
-			continue;
+		{
+			std::string &pssl_bytecode = pssl_compile_res.program;
+
+			std::string metadata = build_metadata(entry.data.read().ptr(), entry.size, pssl_bytecode);
+			if (metadata.size() == 0) {
+				node = node->next();
+				continue;
+			}
+
+			// Generate filename for shader program
+			char file_name[256];
+			sprintf(file_name, "res://.shaders/%ws.sp", hash.c_str());
+
+			// File layout: header|metadata|sb
+			struct Header {
+				uint32_t metadata_size;
+			};
+
+			const size_t file_size = sizeof(Header) + metadata.size() + pssl_bytecode.size();
+			uint8_t *file_output = (uint8_t *)memalloc(file_size);
+			Header header = { metadata.size() };
+			memcpy(file_output, &header, sizeof(Header));
+			memcpy(file_output + sizeof(Header), metadata.c_str(), metadata.size());
+			memcpy(file_output + sizeof(Header) + metadata.size(), pssl_bytecode.c_str(), pssl_bytecode.size());
+
+			// Write shader program to file
+			FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
+			fa->store_buffer(file_output, file_size);
+			fa->close();
+
+			memdelete(fa);
+			memfree(file_output);
 		}
 
-		// Generate filename for this data
-		char file_name[256];
-		sprintf(file_name, "res://.shaders/%ws.psslb", hash.c_str());
+		{
+			std::string &pssl_sdb = pssl_compile_res.sdb;
+			std::string &pssl_sdb_ext = pssl_compile_res.sdb_ext;
 
-		// File layout: header|metadata|psslb
-		struct Header {
-			uint32_t metadata_size;
-		};
+			char file_name[256];
+			sprintf(file_name, "res://.shaders/%ws%s", hash.c_str(), pssl_sdb_ext.c_str());
 
-		const size_t file_size = sizeof(Header) + metadata.size() + pssl_bytecode.size();
-		uint8_t *file_output = (uint8_t *)memalloc(file_size);
-		Header header = { metadata.size() };
-		memcpy(file_output, &header, sizeof(Header));
-		memcpy(file_output + sizeof(Header), metadata.c_str(), metadata.size());
-		memcpy(file_output + sizeof(Header) + metadata.size(), pssl_bytecode.c_str(), pssl_bytecode.size());
+			// Write SDB
+			FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
+			fa->store_buffer((uint8_t *)pssl_sdb.c_str(), pssl_sdb.size());
+			fa->close();
 
-		// Write the compiled data to file
-		FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
-		fa->store_buffer(file_output, file_size);
-		fa->close();
-
-		memdelete(fa);
-		memfree(file_output);
+			memdelete(fa);
+		}
 
 		node = node->next();
 	}
@@ -204,7 +229,9 @@ std::string hlsl_to_pssl(const std::string &hlsl, CompilationConfiguration &conf
 	return output;
 }
 
-std::string compile_pssl(const std::string &pssl, const CompilationConfiguration &config) {
+PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfiguration &config) {
+	PsslCompileResult res;
+
 	// Get the type of stage for this file
 
 	sce::Shader::Wave::Psslc::Options options;
@@ -216,6 +243,7 @@ std::string compile_pssl(const std::string &pssl, const CompilationConfiguration
 	options.entryFunctionName = "main";
 	options.unrollAllLoops = config.unroll;
 	options.userData = (void *)&pssl;
+	options.sdbCache = 1;
 
 	static uint32_t suppressed_warnings[] = {
 		20088, // unreferenced local variable
@@ -234,7 +262,7 @@ std::string compile_pssl(const std::string &pssl, const CompilationConfiguration
 	} else if (config.stage == RD::ShaderStage::SHADER_STAGE_COMPUTE) {
 		options.targetProfile = sce::Shader::Wave::Psslc::kTargetProfileCs;
 	} else {
-		ERR_FAIL_V("");
+		ERR_FAIL_V(res);
 	}
 
 	sce::Shader::Wave::Psslc::CallbackList callbacks;
@@ -287,14 +315,14 @@ std::string compile_pssl(const std::string &pssl, const CompilationConfiguration
 		}
 	}
 
-	if (output->programSize == 0) {
-		return "";
-	}
+	res.program.append((const char *)output->programData, output->programSize);
+	res.sdb.append((const char *)output->sdbData, output->sdbDataSize);
+	if (output->sdbExt)
+		res.sdb_ext.append((const char *)output->sdbExt, strlen(output->sdbExt));
 
-	std::string output_data;
-	output_data.reserve(output->programSize);
-	output_data.append((const char *)output->programData, output->programSize * sizeof(uint8_t));
-	return output_data;
+	sce::Shader::Wave::Psslc::destroyOutput(output);
+
+	return res;
 }
 
 std::string build_metadata(const uint32_t *spirv_data, size_t spirv_size, const std::string &pssl_bytecode) {
