@@ -37,6 +37,7 @@ std::string spirv_to_hlsl(const uint32_t *spirv_data, size_t size);
 std::string hlsl_to_pssl(const std::string &hlsl, CompilationConfiguration &config);
 PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfiguration &config);
 std::string build_metadata(const uint32_t *spirv_data, size_t spirv_size, const std::string &pssl_bytecode);
+Error erase_files_recursive(DirAccess *da, Vector<String> &exclude_pattern);
 
 bool potential_shader(const StringName file_type) {
 	return file_type == "Shader" ||
@@ -48,18 +49,8 @@ bool potential_shader(const StringName file_type) {
 void ShaderExporter::export_shaders() {
 	// Create the shader-folder if it does not exist
 	DirAccess *da = DirAccess::open("res://");
-	if (da->change_dir(".shaders") != OK) {
-		Error err = da->make_dir(".shaders");
-		if (err) {
-			memdelete(da);
-			ERR_FAIL_MSG("Failed to create 'res://.shaders' folder.");
-			return;
-		}
-	} else {
-		// If the folder exists, remove all the files in it
-		da->erase_contents_recursive();
-	}
-	memdelete(da);
+	da->make_dir_recursive(".shaders/debug");
+	da->change_dir(".shaders");
 
 	// Iterate over all files in the project
 	EditorFileSystemDirectory *root_path = EditorFileSystem::get_singleton()->get_filesystem();
@@ -76,47 +67,76 @@ void ShaderExporter::export_shaders() {
 		}
 	}
 
+	Vector<String> processed_shaders;
+
 	// Now all shaders should have been compiled and we have the SPIR-V
 	// code for all of them.
 	// Now we just need to iterate over them, generate PSSL bytecode from them
 	// and save them to disk.
-	auto *node = RD::get_singleton()->compiled_shader_cache.front();
+	auto *node = RD::get_singleton()->shader_compile_cache.front();
 	while (node != nullptr) {
 		String hash = node->key();
-		RenderingDevice::CompiledShaderCacheEntry entry = node->value();
+		const RenderingDevice::ShaderCompileCacheEntry &entry = node->value();
+
+		processed_shaders.push_back(hash);
+
+		// Generate filename for shader program
+		char file_name[256];
+		sprintf(file_name, "res://.shaders/%ws.sp", hash.c_str());
+
+		// Check if up-to-date
+
+		if (FileAccess::exists(String(file_name))) {
+			node = node->next();
+			continue;
+		}
 
 		CompilationConfiguration config;
 		config.unroll = false;
 		config.stage = entry.stage;
 
-		// TEMP: Store the generated PSSL as well so that we can debug errors
-		char temp_pssl_file_name[256];
-		sprintf(temp_pssl_file_name, "res://.shaders/%ws.pssl", hash.c_str());
-
-		char temp_hlsl_file_name[256];
-		sprintf(temp_hlsl_file_name, "res://.shaders/%ws.hlsl", hash.c_str());
-
-		printf("Compiling %s\n", temp_pssl_file_name);
+		printf("Compiling %s\n", hash.utf8().ptr());
 
 		// Compile to PSSL (SpirV -> HLSL -> PSSL -> Bytecode)
 		std::string hlsl_source = spirv_to_hlsl(entry.data.read().ptr(), entry.size);
 		std::string pssl_source = hlsl_to_pssl(hlsl_source, config);
 
-		FileAccess *fa_tmp = FileAccess::open(temp_pssl_file_name, FileAccess::WRITE);
-		fa_tmp->store_buffer((uint8_t *)pssl_source.c_str(), pssl_source.size());
-		fa_tmp->close();
-		memdelete(fa_tmp);
+		// Write shader sources (for debug)
 
-		FileAccess *fa_tmp2 = FileAccess::open(temp_hlsl_file_name, FileAccess::WRITE);
-		fa_tmp2->store_buffer((uint8_t *)hlsl_source.c_str(), hlsl_source.size());
-		fa_tmp2->close();
-		memdelete(fa_tmp2);
+		{
+			char debug_file_name[256];
+			{
+				sprintf(debug_file_name, "res://.shaders/debug/%ws.glsl", hash.c_str());
+				FileAccess *fa = FileAccess::open(debug_file_name, FileAccess::WRITE);
+				fa->store_buffer((uint8_t *)entry.orig_source_code.utf8().ptr(), entry.orig_source_code.size());
+				fa->close();
+				memdelete(fa);
+			}
+
+			{
+				sprintf(debug_file_name, "res://.shaders/debug/%ws.hlsl", hash.c_str());
+				FileAccess *fa = FileAccess::open(debug_file_name, FileAccess::WRITE);
+				fa->store_buffer((uint8_t *)hlsl_source.c_str(), hlsl_source.size());
+				fa->close();
+				memdelete(fa);
+			}
+
+			{
+				sprintf(debug_file_name, "res://.shaders/debug/%ws.pssl", hash.c_str());
+				FileAccess *fa = FileAccess::open(debug_file_name, FileAccess::WRITE);
+				fa->store_buffer((uint8_t *)pssl_source.c_str(), pssl_source.size());
+				fa->close();
+				memdelete(fa);
+			}
+		}
 
 		PsslCompileResult pssl_compile_res = compile_pssl(pssl_source, config);
 		if (pssl_compile_res.program.size() == 0) {
 			node = node->next();
 			continue;
 		}
+
+		// Write shader program
 
 		{
 			std::string &pssl_bytecode = pssl_compile_res.program;
@@ -126,10 +146,6 @@ void ShaderExporter::export_shaders() {
 				node = node->next();
 				continue;
 			}
-
-			// Generate filename for shader program
-			char file_name[256];
-			sprintf(file_name, "res://.shaders/%ws.sp", hash.c_str());
 
 			// File layout: header|metadata|sb
 			struct Header {
@@ -152,14 +168,14 @@ void ShaderExporter::export_shaders() {
 			memfree(file_output);
 		}
 
+		// Write shader debug database
+
 		{
 			std::string &pssl_sdb = pssl_compile_res.sdb;
 			std::string &pssl_sdb_ext = pssl_compile_res.sdb_ext;
 
-			char file_name[256];
 			sprintf(file_name, "res://.shaders/%ws%s", hash.c_str(), pssl_sdb_ext.c_str());
 
-			// Write SDB
 			FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
 			fa->store_buffer((uint8_t *)pssl_sdb.c_str(), pssl_sdb.size());
 			fa->close();
@@ -169,6 +185,10 @@ void ShaderExporter::export_shaders() {
 
 		node = node->next();
 	}
+
+	// Erase all files that was not processed during export
+	erase_files_recursive(da, processed_shaders);
+	memdelete(da);
 }
 
 std::string spirv_to_hlsl(const uint32_t *spirv_data, size_t size) {
@@ -649,4 +669,64 @@ std::string build_metadata(const uint32_t *spirv_data, size_t spirv_size, const 
 	metadata_string.append((const char *)blob.ptrw(), blob.size());
 
 	return metadata_string;
+}
+
+Error erase_files_recursive(DirAccess *da, Vector<String> &exclude_pattern) {
+	List<String> dirs;
+	List<String> files;
+
+	da->list_dir_begin();
+	String n = da->get_next();
+	while (n != String()) {
+
+		if (n != "." && n != "..") {
+
+			if (da->current_is_dir())
+				dirs.push_back(n);
+			else {
+				bool include = true;
+				for (uint32_t i = 0; i < exclude_pattern.size(); ++i) {
+					if (n.find(exclude_pattern[i]) != -1) {
+						include = false;
+						break;
+					}
+				}
+				if (include)
+					files.push_back(n);
+			}
+		}
+
+		n = da->get_next();
+	}
+
+	da->list_dir_end();
+
+	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
+
+		Error err = da->change_dir(E->get());
+		if (err == OK) {
+
+			err = erase_files_recursive(da, exclude_pattern);
+			if (err) {
+				da->change_dir("..");
+				return err;
+			}
+			err = da->change_dir("..");
+			if (err) {
+				return err;
+			}
+		} else {
+			return err;
+		}
+	}
+
+	for (List<String>::Element *E = files.front(); E; E = E->next()) {
+
+		Error err = da->remove(da->get_current_dir().plus_file(E->get()));
+		if (err) {
+			return err;
+		}
+	}
+
+	return OK;
 }
