@@ -33,10 +33,10 @@ struct PsslCompileResult {
 	std::string sdb;
 };
 
-std::string spirv_to_hlsl(const uint32_t *spirv_data, size_t size);
+std::string spirv_to_hlsl(const PoolVector<uint8_t> &spirv);
 std::string hlsl_to_pssl(const std::string &hlsl, CompilationConfiguration &config);
 PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfiguration &config);
-std::string build_metadata(const uint32_t *spirv_data, size_t spirv_size, const std::string &pssl_bytecode);
+std::string build_metadata(const PoolVector<uint8_t> &spirv, const std::string &pssl_bytecode);
 Error erase_files_recursive(DirAccess *da, Vector<String> &exclude_pattern);
 
 bool potential_shader(const StringName file_type) {
@@ -98,7 +98,7 @@ void ShaderExporter::export_shaders() {
 		printf("Compiling %s\n", hash.utf8().ptr());
 
 		// Compile to PSSL (SpirV -> HLSL -> PSSL -> Bytecode)
-		std::string hlsl_source = spirv_to_hlsl(entry.data.read().ptr(), entry.size);
+		std::string hlsl_source = spirv_to_hlsl(entry.program);
 		std::string pssl_source = hlsl_to_pssl(hlsl_source, config);
 
 		// Write shader sources (for debug)
@@ -108,7 +108,7 @@ void ShaderExporter::export_shaders() {
 			{
 				sprintf(debug_file_name, "res://.shaders/debug/%ws.glsl", hash.c_str());
 				FileAccess *fa = FileAccess::open(debug_file_name, FileAccess::WRITE);
-				fa->store_buffer((uint8_t *)entry.orig_source_code.utf8().ptr(), entry.orig_source_code.size());
+				fa->store_buffer((uint8_t *)entry.source_code.utf8().ptr(), entry.source_code.size());
 				fa->close();
 				memdelete(fa);
 			}
@@ -141,7 +141,7 @@ void ShaderExporter::export_shaders() {
 		{
 			std::string &pssl_bytecode = pssl_compile_res.program;
 
-			std::string metadata = build_metadata(entry.data.read().ptr(), entry.size, pssl_bytecode);
+			std::string metadata = build_metadata(entry.program, pssl_bytecode);
 			if (metadata.size() == 0) {
 				node = node->next();
 				continue;
@@ -191,8 +191,11 @@ void ShaderExporter::export_shaders() {
 	memdelete(da);
 }
 
-std::string spirv_to_hlsl(const uint32_t *spirv_data, size_t size) {
-	spirv_cross::CompilerHLSL hlsl(spirv_data, size);
+std::string spirv_to_hlsl(const PoolVector<uint8_t> &spirv) {
+	uint32_t *spirv_data = (uint32_t *)spirv.read().ptr();
+	uint32_t spirv_size = spirv.size() / sizeof(uint32_t);
+
+	spirv_cross::CompilerHLSL hlsl(spirv_data, spirv_size);
 
 	spirv_cross::CompilerHLSL::Options opts;
 	opts.shader_model = 50;
@@ -345,8 +348,7 @@ PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfigu
 	return res;
 }
 
-std::string build_metadata(const uint32_t *spirv_data, size_t spirv_size, const std::string &pssl_bytecode) {
-
+std::string build_metadata(const PoolVector<uint8_t> &spirv, const std::string &pssl_bytecode) {
 	struct SpirvReflection {
 		SpvReflectShaderModule module;
 		Vector<SpvReflectDescriptorBinding *> descriptor_bindings;
@@ -373,7 +375,7 @@ std::string build_metadata(const uint32_t *spirv_data, size_t spirv_size, const 
 	{
 		spirv_reflection.push_constant = nullptr;
 
-		SpvReflectResult result = spvReflectCreateShaderModule(spirv_size * sizeof(uint32_t), spirv_data, &spirv_reflection.module);
+		SpvReflectResult result = spvReflectCreateShaderModule(spirv.size(), spirv.read().ptr(), &spirv_reflection.module);
 		ERR_FAIL_COND_V(result != SPV_REFLECT_RESULT_SUCCESS, "");
 
 		uint32_t descriptor_bindings_count = 0;

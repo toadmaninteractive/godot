@@ -32,6 +32,7 @@
 #define RENDERING_DEVICE_H
 
 #include "core/object.h"
+#include "core/os/thread_safe.h"
 
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
@@ -57,6 +58,17 @@ public:
 
 	typedef PoolVector<uint8_t> (*ShaderCompileFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error);
 	typedef PoolVector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
+
+#ifdef PS4_EDITOR_TOOLS
+	struct ShaderCompileCacheEntry {
+		PoolVector<uint8_t> program;
+		String source_code;
+		int stage;
+	};
+
+	ThreadSafe shader_compile_cache_lock;
+	Map<String, ShaderCompileCacheEntry> shader_compile_cache;
+#endif // PS4_EDITOR_TOOLS
 
 private:
 	static ShaderCompileFunction compile_function;
@@ -1024,17 +1036,6 @@ public:
 	static RenderingDevice *get_singleton();
 
 	RenderingDevice();
-
-#ifdef PS4_EDITOR_TOOLS
-	struct CompiledShaderCacheEntry {
-		PoolVector<uint32_t> data;	// SPIR-V
-		uint32_t size;				// Size of 'data'
-		String orig_source_code;	// TEMP for debugging
-		int stage;					// Type of shader (Vertex, Fragment etc)
-	};
-
-	Map<String, CompiledShaderCacheEntry> compiled_shader_cache;
-#endif // PS4_EDITOR_TOOLS
 };
 
 typedef RenderingDevice RD;
