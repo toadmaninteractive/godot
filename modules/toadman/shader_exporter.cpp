@@ -14,6 +14,7 @@
 
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
+#include <gnm/constants.h>
 #include <shader.h>
 #include <shader/binary.h>
 #include <shader/wave_psslc.h>
@@ -27,7 +28,13 @@ struct CompilationConfiguration {
 	int stage;
 };
 
+struct PsslPermutation {
+	uint32_t id;
+	Vector<sce::Gnm::PsTargetOutputMode> formats;
+};
+
 struct PsslCompileResult {
+	uint32_t permutation;
 	std::string program;
 	std::string sdb_ext;
 	std::string sdb;
@@ -45,6 +52,29 @@ bool potential_shader(const StringName file_type) {
 		   file_type == "ShaderMaterial" ||
 		   file_type == "PackedScene";
 }
+
+void generate_permutations_recursive(
+		const uint32_t num_output_modes, const sce::Gnm::PsTargetOutputMode *output_modes,
+		const uint32_t num_output_targets, const uint32_t output_target, Vector<PsslPermutation> &permutations, PsslPermutation &permutation) {
+	if (output_target == num_output_targets) {
+		uint32_t id = 0;
+		for (uint32_t i = 0; i < num_output_targets; ++i) {
+			uint32_t id_mask = permutation.formats[i];
+			id_mask <<= i * 4; // 4 bit per target
+			id |= id_mask;
+		}
+		permutation.id = id;
+		permutations.push_back(permutation);
+		return;
+	}
+
+	permutation.formats.resize(num_output_targets);
+
+	for (uint32_t i = 0; i < num_output_modes; ++i) {
+		permutation.formats.write[output_target] = output_modes[i];
+		generate_permutations_recursive(num_output_modes, output_modes, num_output_targets, output_target + 1, permutations, permutation);
+	}
+};
 
 void ShaderExporter::export_shaders() {
 	// Create the shader-folder if it does not exist
@@ -85,7 +115,6 @@ void ShaderExporter::export_shaders() {
 		sprintf(file_name, "res://.shaders/%ws.sp", hash.c_str());
 
 		// Check if up-to-date
-
 		if (FileAccess::exists(String(file_name))) {
 			node = node->next();
 			continue;
@@ -130,8 +159,100 @@ void ShaderExporter::export_shaders() {
 			}
 		}
 
-		PsslCompileResult pssl_compile_res = compile_pssl(pssl_source, config);
-		if (pssl_compile_res.program.size() == 0) {
+		Vector<PsslCompileResult> pssl_compile_results;
+
+		if (config.stage == RD::ShaderStage::SHADER_STAGE_FRAGMENT) {
+			/*
+				Brute force approach. Generate all potential permutations of output-target-format combinations.
+				Until we introduce shader hinting of how output targets will be bound. Then only those -
+				shaders would have to generate permutations.
+
+				Total permutations: num_output_formats^num_output_targets
+
+				Some Godot shaders support a variety of output-target-formats for a specific target-slot.
+				These targets are bound in runtime. This is fully supported by Vulkan/Spirv.
+				Example:
+					Blur shader has a copy mode.
+					This shader sometimes copies to a R32 target, other times a R8G8B8A8 target.
+
+				This is not fully supported by PSSL shader. Assembly will change depending on output-target-formats.
+				Therefore not all targets can be bound to shader compiled with FMT_FP16_ABGR (default).
+				Example:
+					Binding a R32 target to shader compiled as FMT_FP16_ABGR would fail validation on submit.
+				
+				There are some edge cases (might not have encountered them all):
+				Example:
+					UNORM and SNORM channel type is only supported when using a 16bit channel size
+			*/
+
+			// reflect output targets
+
+			uint32_t output_target_count = 0;
+			{
+				SpvReflectShaderModule module;
+				SpvReflectResult result = spvReflectCreateShaderModule(entry.program.size(), entry.program.read().ptr(), &module);
+				ERR_FAIL_COND(result != SPV_REFLECT_RESULT_SUCCESS);
+				Vector<SpvReflectInterfaceVariable *> output_variables;
+				spvReflectEnumerateOutputVariables(&module, &output_target_count, NULL);
+				spvReflectDestroyShaderModule(&module);
+			}
+
+			if (output_target_count) {
+				static const sce::Gnm::PsTargetOutputMode output_modes[] = {
+					sce::Gnm::kPsTargetOutputModeA16B16G16R16Float, // 1.0 quad/clock
+					sce::Gnm::kPsTargetOutputModeR32, // 1.0 quad/clock
+					//sce::Gnm::kPsTargetOutputModeA32B32G32R32, // 0.5 quad/clock (performance hit)
+				};
+
+				static const char *output_format_strings[] = {
+					"FMT_FP16_ABGR", // kPsTargetOutputModeNoExports = 0,
+					"FMT_32_R", // kPsTargetOutputModeR32 = 1,
+					"FMT_32_GR", // kPsTargetOutputModeG32R32 = 2,
+					"FMT_32_AR", // kPsTargetOutputModeA32R32 = 3,
+					"FMT_FP16_ABGR", // kPsTargetOutputModeA16B16G16R16Float = 4, - default
+					"FMT_UNORM16_ABGR", // kPsTargetOutputModeA16B16G16R16Unorm = 5,
+					"FMT_SNORM16_ABGR", // kPsTargetOutputModeA16B16G16R16Snorm = 6,
+					"FMT_UINT16_ABGR", // kPsTargetOutputModeA16B16G16R16Uint = 7,
+					"FMT_SINT16_ABGR", // kPsTargetOutputModeA16B16G16R16Sint = 8,
+					"FMT_32_ABGR", // kPsTargetOutputModeA32B32G32R32 = 9
+				};
+
+				const uint32_t num_output_modes = sizeof(output_modes) / sizeof(output_modes[0]);
+
+				PsslPermutation stage;
+				Vector<PsslPermutation> permutations;
+				generate_permutations_recursive(num_output_modes, output_modes, output_target_count, 0, permutations, stage);
+
+				char pragma_buffer[128];
+				const char *pragma_pattern = "#pragma PSSL_target_output_format(target %lu %s)\n";
+				for (uint32_t i = 0; i < permutations.size(); ++i) {
+					std::string pssl_copy = pssl_source;
+					const PsslPermutation &permutation = permutations[i];
+					for (uint32_t j = 0; j < permutation.formats.size(); ++j) {
+						sprintf_s(pragma_buffer, 128, pragma_pattern, j, output_format_strings[(uint32_t)permutation.formats[j]]);
+						pssl_copy.insert(0, pragma_buffer);
+					}
+
+					PsslCompileResult result = compile_pssl(pssl_copy, config);
+					if (result.program.size() == 0) {
+						pssl_compile_results.clear();
+						break;
+					}
+					result.permutation = permutation.id;
+					pssl_compile_results.push_back(result);
+				}
+			} else {
+				PsslCompileResult result = compile_pssl(pssl_source, config);
+				if (result.program.size())
+					pssl_compile_results.push_back(result);
+			}
+		} else {
+			PsslCompileResult result = compile_pssl(pssl_source, config);
+			if (result.program.size())
+				pssl_compile_results.push_back(result);
+		}
+
+		if (pssl_compile_results.size() == 0) {
 			node = node->next();
 			continue;
 		}
@@ -139,25 +260,73 @@ void ShaderExporter::export_shaders() {
 		// Write shader program
 
 		{
-			std::string &pssl_bytecode = pssl_compile_res.program;
-
-			std::string metadata = build_metadata(entry.program, pssl_bytecode);
+			std::string metadata = build_metadata(entry.program, pssl_compile_results[0].program);
 			if (metadata.size() == 0) {
 				node = node->next();
 				continue;
 			}
 
-			// File layout: header|metadata|sb
-			struct Header {
-				uint32_t metadata_size;
+			// File layout
+			struct ShaderHeader {
+				struct MetadataHeader {
+					uint32_t size;
+					uint32_t offset;
+				};
+
+				struct ProgramHeader {
+					uint32_t size;
+					uint32_t permutation;
+					uint32_t offset;
+				};
+
+				MetadataHeader metadata_header;
+				uint32_t num_program_headers;
+				// program headers
+				// metadata
+				// program data
 			};
 
-			const size_t file_size = sizeof(Header) + metadata.size() + pssl_bytecode.size();
+			const uint32_t num_programs = pssl_compile_results.size();
+			const uint32_t header_size = sizeof(ShaderHeader);
+			const uint32_t program_header_size = sizeof(ShaderHeader::ProgramHeader);
+			const uint32_t program_headers_size = program_header_size * num_programs;
+			const uint32_t metadata_size = metadata.size();
+
+			const uint32_t metadata_offset = header_size + program_headers_size;
+			const uint32_t program_data_offset = metadata_offset + metadata_size;
+
+			uint32_t total_programs_size = 0;
+			for (uint32_t i = 0; i < num_programs; ++i)
+				total_programs_size += pssl_compile_results[i].program.size();
+
+			const size_t file_size = header_size + program_headers_size + metadata_size + total_programs_size;
 			uint8_t *file_output = (uint8_t *)memalloc(file_size);
-			Header header = { metadata.size() };
-			memcpy(file_output, &header, sizeof(Header));
-			memcpy(file_output + sizeof(Header), metadata.c_str(), metadata.size());
-			memcpy(file_output + sizeof(Header) + metadata.size(), pssl_bytecode.c_str(), pssl_bytecode.size());
+
+			// shader header
+
+			ShaderHeader header;
+			header.metadata_header.size = metadata_size;
+			header.metadata_header.offset = metadata_offset;
+			header.num_program_headers = num_programs;
+			memcpy(file_output, &header, header_size);
+
+			// metadata
+
+			memcpy(file_output + metadata_offset, metadata.c_str(), metadata_size);
+
+			// program-header and program-data
+
+			uint32_t program_offset = 0;
+			ShaderHeader::ProgramHeader program_header;
+			for (uint32_t i = 0; i < num_programs; ++i) {
+				program_header.size = pssl_compile_results[i].program.size();
+				program_header.permutation = pssl_compile_results[i].permutation;
+				program_header.offset = program_data_offset + program_offset;
+
+				memcpy(file_output + header_size + (i * program_header_size), &program_header, program_header_size);
+				memcpy(file_output + program_header.offset, pssl_compile_results[i].program.c_str(), program_header.size);
+				program_offset += program_header.size;
+			}
 
 			// Write shader program to file
 			FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
@@ -171,16 +340,19 @@ void ShaderExporter::export_shaders() {
 		// Write shader debug database
 
 		{
-			std::string &pssl_sdb = pssl_compile_res.sdb;
-			std::string &pssl_sdb_ext = pssl_compile_res.sdb_ext;
+			for (uint32_t i = 0; i < pssl_compile_results.size(); ++i) {
+				const PsslCompileResult &result = pssl_compile_results[i];
+				const std::string &pssl_sdb = result.sdb;
+				const std::string &pssl_sdb_ext = result.sdb_ext;
 
-			sprintf(file_name, "res://.shaders/%ws%s", hash.c_str(), pssl_sdb_ext.c_str());
+				sprintf(file_name, "res://.shaders/%ws%s", hash.c_str(), pssl_sdb_ext.c_str());
 
-			FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
-			fa->store_buffer((uint8_t *)pssl_sdb.c_str(), pssl_sdb.size());
-			fa->close();
+				FileAccess *fa = FileAccess::open(file_name, FileAccess::WRITE);
+				fa->store_buffer((uint8_t *)pssl_sdb.c_str(), pssl_sdb.size());
+				fa->close();
 
-			memdelete(fa);
+				memdelete(fa);
+			}
 		}
 
 		node = node->next();
@@ -254,13 +426,14 @@ std::string hlsl_to_pssl(const std::string &hlsl, CompilationConfiguration &conf
 
 PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfiguration &config) {
 	PsslCompileResult res;
+	res.permutation = 0;
 
 	// Get the type of stage for this file
 
 	sce::Shader::Wave::Psslc::Options options;
 	sce::Shader::Wave::Psslc::initializeOptions(&options, SCE_WAVE_API_VERSION);
 
-	// Set the source-file to dymmy since we will supply the
+	// Set the source-file to dummy since we will supply the
 	// code from memory instead of disk (through user-data)
 	options.mainSourceFile = "dummy";
 	options.entryFunctionName = "main";
