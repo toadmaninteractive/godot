@@ -6022,7 +6022,7 @@ yyreduce:
 #line 1486 "MachineIndependent/glslang.y" /* yacc.c:1646  */
     {
         (yyval.interm.type).init((yyvsp[0].lex).loc);
-        (yyval.interm.type).qualifier.restric = true;
+        (yyval.interm.type).qualifier.restrict = true;
     }
 #line 6026 "MachineIndependent/glslang_tab.cpp" /* yacc.c:1646  */
     break;

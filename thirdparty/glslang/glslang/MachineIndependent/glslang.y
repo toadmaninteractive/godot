@@ -1487,7 +1487,7 @@ storage_qualifier
     }
     | RESTRICT {
         $$.init($1.loc);
-        $$.qualifier.restric = true;
+        $$.qualifier.restrict = true;
     }
     | READONLY {
         $$.init($1.loc);

@@ -557,7 +557,7 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
         symbol.getQualifier().subgroupcoherent  != unitSymbol.getQualifier().subgroupcoherent ||
         symbol.getQualifier().nonprivate        != unitSymbol.getQualifier().nonprivate ||
         symbol.getQualifier().volatil           != unitSymbol.getQualifier().volatil ||
-        symbol.getQualifier().restric           != unitSymbol.getQualifier().restric ||
+        symbol.getQualifier().restrict          != unitSymbol.getQualifier().restrict ||
         symbol.getQualifier().readonly          != unitSymbol.getQualifier().readonly ||
         symbol.getQualifier().writeonly         != unitSymbol.getQualifier().writeonly) {
         error(infoSink, "Memory qualifiers must match:");
