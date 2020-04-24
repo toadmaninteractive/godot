@@ -270,7 +270,7 @@
 		cmd->sync_sem = ss;                                                                    \
 		unlock();                                                                              \
 		if (sync) sync->post();                                                                \
-		ss->sem->wait();                                                                       \
+		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
 
@@ -287,7 +287,7 @@
 		cmd->sync_sem = ss;                                                           \
 		unlock();                                                                     \
 		if (sync) sync->post();                                                       \
-		ss->sem->wait();                                                              \
+		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
 
@@ -297,7 +297,7 @@ class CommandQueueMT {
 
 	struct SyncSemaphore {
 
-		SemaphoreOld *sem;
+		Semaphore sem;
 		bool in_use;
 	};
 
@@ -313,7 +313,7 @@ class CommandQueueMT {
 		SyncSemaphore *sync_sem;
 
 		virtual void post() {
-			sync_sem->sem->post();
+			sync_sem->sem.post();
 		}
 	};
 
@@ -341,8 +341,8 @@ class CommandQueueMT {
 	uint32_t write_ptr;
 	uint32_t dealloc_ptr;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
-	Mutex *mutex;
-	SemaphoreOld *sync;
+	Mutex mutex;
+	Semaphore *sync;
 
 	template <class T>
 	T *allocate() {
@@ -360,7 +360,7 @@ class CommandQueueMT {
 				if (dealloc_one()) {
 					goto tryagain;
 				}
-				return NULL;
+				return nullptr;
 			}
 		} else {
 			// ahead of dealloc_ptr, check that there is room
@@ -374,11 +374,11 @@ class CommandQueueMT {
 					if (dealloc_one()) {
 						goto tryagain;
 					}
-					return NULL;
+					return nullptr;
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, NULL);
+				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, nullptr);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
@@ -406,7 +406,7 @@ class CommandQueueMT {
 		lock();
 		T *ret;
 
-		while ((ret = allocate<T>()) == NULL) {
+		while ((ret = allocate<T>()) == nullptr) {
 
 			unlock();
 			// sleep a little until fetch happened and some room is made
@@ -508,4 +508,4 @@ public:
 #undef CMD_SYNC_TYPE
 #undef DECL_CMD_SYNC
 
-#endif
+#endif // COMMAND_QUEUE_MT_H

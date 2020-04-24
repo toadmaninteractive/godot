@@ -33,12 +33,14 @@
 # traveller010 <manar.bushnaq.001@gmail.com>, 2019.
 # Ahmed Shahwan <dev.ahmed.shahwan@gmail.com>, 2019.
 # hshw <shw@tutanota.com>, 2020.
+# Youssef Harmal <the.coder.crab@gmail.com>, 2020.
+# Nabeel20 <nabeelandnizam@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-16 22:23+0000\n"
-"Last-Translator: hshw <shw@tutanota.com>\n"
+"PO-Revision-Date: 2020-04-15 14:29+0000\n"
+"Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -47,7 +49,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.10.2-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -708,8 +710,9 @@ msgid "Line Number:"
 msgstr "رقم الخط:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "إستبُدل %d حادثة(حوادث)."
+#, fuzzy
+msgid "%d replaced."
+msgstr "تم إستبدال %d"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -746,7 +749,7 @@ msgstr "معياري"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr ""
+msgstr "تحديد التبويب البرمجي"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -914,7 +917,7 @@ msgstr "هل أنت(ي) متأكد(ة) أنك تود إزالة كل الإتص�
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "إشارات"
+msgstr "الإشارات"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1224,9 +1227,8 @@ msgid "The following files failed extraction from package:"
 msgstr "فشل استخراج الملفات التالية من الحزمة:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d مزيد من الملفات"
+msgstr "%s مزيد من الملفات"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1380,9 +1382,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "ملف خطأ، ليس ملف نسق بيوس الصوت."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "خطأ في حفظ مجموعة البلاط!"
+msgstr "خطأ !خطأ في تسجيل الملف: s%"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1468,7 +1469,7 @@ msgstr "نقل التحميل التلقائي"
 msgid "Remove Autoload"
 msgstr "ازالة التحميل التلقائي"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "تمكين"
 
@@ -1513,6 +1514,10 @@ msgstr "الأسم"
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "الفردية"
+
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "لصق المُعامل"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1604,9 +1609,8 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "ملف النموذج غير موجود:"
+msgstr "نمودج تصحيح الأخطاء غير موجود."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1623,9 +1627,8 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "المُعدل"
+msgstr "معدل تلاثي الأبعاد"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1638,22 +1641,19 @@ msgstr "مكتبة الأصول"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
-msgstr ""
+msgstr "تعديل شجرة المشهد"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "إستيراد"
+msgstr "رصيف الاستيراد"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "وضع التحريك"
+msgstr "رصيف العقد"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "نظام الملفات"
+msgstr "رصيف نظام الملفات و الاستيراد"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1823,7 +1823,7 @@ msgstr "أظهر في مدير الملفات"
 msgid "New Folder..."
 msgstr "مجلد جديد..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "تحديث"
@@ -3005,8 +3005,13 @@ msgid "Q&A"
 msgstr "الأسئلة و الأجوبة"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "متتبع الأخطاء"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "إعادة إستيراد"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4069,16 +4074,17 @@ msgid "Saving..."
 msgstr "جاري الحفظ..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " ملفات"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "حدد كإفتراضي من أجل '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "إخلاء الإفتراضي لـ '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " ملفات"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4094,7 +4100,7 @@ msgid "Reimport"
 msgstr "إعادة إستيراد"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -4128,10 +4134,6 @@ msgstr "حفظ باسم..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "إنسخ المُعامل"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "لصق المُعامل"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -6061,12 +6063,13 @@ msgid "Mesh is empty!"
 msgstr "الميش فارغ!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "أنشئ جسم تراميش ثابت"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "إنشاء متصادم تراميش قريب"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "أنشئ جسم محدب ثابت"
+msgid "Create Static Trimesh Body"
+msgstr "أنشئ جسم تراميش ثابت"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6078,12 +6081,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "أنشئ شكل تراميش"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "أنشئ شكل محدب"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "لا يمكن إنشاء المجلد."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "أنشئ شكل محدب"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6135,17 +6156,55 @@ msgid "Create Trimesh Static Body"
 msgstr "إنشاء جسم تراميش ثابت"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "إنشاء متصادم تراميش قريب"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Sibling"
 msgstr "إنشاء متصادم محدب قريب"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "إنشاء متصادم محدب قريب"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "إنشاء شبكة الخطوط العريضة ..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -7031,14 +7090,6 @@ msgid "Open Godot online documentation."
 msgstr "فُتح مؤخراً"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -7493,6 +7544,10 @@ msgid "This operation requires a single selected node."
 msgstr "هذه العملية تتطلب عقدة واحدة محددة."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr ""
 
@@ -7583,13 +7638,13 @@ msgid "Freelook Slow Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid ""
-"Note: The FPS value displayed is the editor's framerate.\n"
-"It cannot be used as a reliable indication of in-game performance."
+msgid "View Rotation Locked"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8677,7 +8732,7 @@ msgstr "مجموعة البلاط"
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr ""
 
@@ -9098,38 +9153,39 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
 msgstr ""
+"ثابت E  ويعادل القيمة (2.718282)، وهو يمثل الأساس في اللوغاريتم الطبيعي."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
-msgstr ""
+msgstr "ثابت إيبسلون (0.00001)، أصغر الأعداد على الإطلاق."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Phi constant (1.618034). Golden ratio."
-msgstr ""
+msgstr "ثابت فاي (1.618034)، ويمثل النسبة الذهبية ذاتها."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/4 constant (0.785398) or 45 degrees."
-msgstr ""
+msgstr "ثابت باي/4 (0.785398) أو 45 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/2 constant (1.570796) or 90 degrees."
-msgstr ""
+msgstr "ثابت باي/2 (1.570796) أو 90 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi constant (3.141593) or 180 degrees."
-msgstr ""
+msgstr "ثابت باي (3.141593) أو 180 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Tau constant (6.283185) or 360 degrees."
-msgstr ""
+msgstr "ثابت تاو Tau وقيمته (6.283185) أو 360 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sqrt2 constant (1.414214). Square root of 2."
-msgstr ""
+msgstr "ثابت جذر-العدد2 (1.414214)، أي قيمة جذر العدد 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "يحسب القيمة المطلقة لقيمة المَعلم."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
@@ -9812,11 +9868,18 @@ msgid "Export With Debug"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "هذا المسار غير موجود."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "حدث خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9824,11 +9887,11 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10489,6 +10552,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "النسخة الحالية:"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "إعدادات الكبس"
 
@@ -10527,7 +10595,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10558,10 +10626,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10570,11 +10634,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10593,6 +10657,15 @@ msgstr ""
 #, fuzzy
 msgid "Reset"
 msgstr "إرجاع التكبير"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "الأحرف الصالحة:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11062,7 +11135,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "شجرة الحركة صحيحة."
 
 #: editor/script_create_dialog.cpp
@@ -11088,6 +11161,12 @@ msgstr "تحميل نسق بيوس موجود مسبقاً."
 #, fuzzy
 msgid "Script file already exists."
 msgstr "التحميل التلقائي '%s' موجود اصلا!"
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11169,6 +11248,10 @@ msgid "Copy Error"
 msgstr "خطأ في نسخ"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Skip Breakpoints"
 msgstr "مسح النقاط"
@@ -11216,10 +11299,6 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
-msgstr ""
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -12530,6 +12609,11 @@ msgid ""
 "don't use them."
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -12778,6 +12862,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "مصدر غير صالح للمعاينة."
@@ -12805,6 +12893,15 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "متتبع الأخطاء"
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "إستبُدل %d حادثة(حوادث)."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "أنشئ جسم محدب ثابت"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

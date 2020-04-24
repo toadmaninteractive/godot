@@ -47,8 +47,6 @@ void post_process_preview(Ref<Image> p_image) {
 	if (p_image->get_format() != Image::FORMAT_RGBA8)
 		p_image->convert(Image::FORMAT_RGBA8);
 
-	p_image->lock();
-
 	const int w = p_image->get_width();
 	const int h = p_image->get_height();
 
@@ -70,8 +68,6 @@ void post_process_preview(Ref<Image> p_image) {
 			}
 		}
 	}
-
-	p_image->unlock();
 }
 
 bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
@@ -207,19 +203,19 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size
 		return Ref<Texture2D>();
 	}
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 
 	data.resize(bm->get_size().width * bm->get_size().height);
 
 	{
-		PoolVector<uint8_t>::Write w = data.write();
+		uint8_t *w = data.ptrw();
 
 		for (int i = 0; i < bm->get_size().width; i++) {
 			for (int j = 0; j < bm->get_size().height; j++) {
 				if (bm->get_bit(Point2i(i, j))) {
-					w[j * bm->get_size().width + i] = 255;
+					w[j * (int)bm->get_size().width + i] = 255;
 				} else {
-					w[j * bm->get_size().width + i] = 0;
+					w[j * (int)bm->get_size().width + i] = 0;
 				}
 			}
 		}
@@ -332,19 +328,19 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 
 	if (material->get_shader_mode() == Shader::MODE_SPATIAL) {
 
-		VS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
+		RS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
-		VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
+		RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 		preview_done = false;
-		VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
+		RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
 
 		while (!preview_done) {
 			OS::get_singleton()->delay_usec(10);
 		}
 
-		Ref<Image> img = VS::get_singleton()->texture_2d_get(viewport_texture);
-		VS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
+		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
+		RS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
 
 		ERR_FAIL_COND_V(!img.is_valid(), Ref<ImageTexture>());
 
@@ -362,44 +358,44 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 
 EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 
-	scenario = VS::get_singleton()->scenario_create();
+	scenario = RS::get_singleton()->scenario_create();
 
-	viewport = VS::get_singleton()->viewport_create();
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
-	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
-	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	VS::get_singleton()->viewport_set_active(viewport, true);
-	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+	viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
+	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
+	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
 
-	camera = VS::get_singleton()->camera_create();
-	VS::get_singleton()->viewport_attach_camera(viewport, camera);
-	VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
-	VS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
+	camera = RS::get_singleton()->camera_create();
+	RS::get_singleton()->viewport_attach_camera(viewport, camera);
+	RS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
+	RS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
 
-	light = VS::get_singleton()->directional_light_create();
-	light_instance = VS::get_singleton()->instance_create2(light, scenario);
-	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	light = RS::get_singleton()->directional_light_create();
+	light_instance = RS::get_singleton()->instance_create2(light, scenario);
+	RS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = VS::get_singleton()->directional_light_create();
-	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	light2 = RS::get_singleton()->directional_light_create();
+	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	//RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 
-	light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
+	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
-	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
+	RS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	sphere = VS::get_singleton()->mesh_create();
-	sphere_instance = VS::get_singleton()->instance_create2(sphere, scenario);
+	sphere = RS::get_singleton()->mesh_create();
+	sphere_instance = RS::get_singleton()->instance_create2(sphere, scenario);
 
 	int lats = 32;
 	int lons = 32;
 	float radius = 1.0;
 
-	PoolVector<Vector3> vertices;
-	PoolVector<Vector3> normals;
-	PoolVector<Vector2> uvs;
-	PoolVector<float> tangents;
+	Vector<Vector3> vertices;
+	Vector<Vector3> normals;
+	Vector<Vector2> uvs;
+	Vector<float> tangents;
 	Basis tt = Basis(Vector3(0, 1, 0), Math_PI * 0.5);
 
 	for (int i = 1; i <= lats; i++) {
@@ -457,25 +453,25 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	}
 
 	Array arr;
-	arr.resize(VS::ARRAY_MAX);
-	arr[VS::ARRAY_VERTEX] = vertices;
-	arr[VS::ARRAY_NORMAL] = normals;
-	arr[VS::ARRAY_TANGENT] = tangents;
-	arr[VS::ARRAY_TEX_UV] = uvs;
-	VS::get_singleton()->mesh_add_surface_from_arrays(sphere, VS::PRIMITIVE_TRIANGLES, arr);
+	arr.resize(RS::ARRAY_MAX);
+	arr[RS::ARRAY_VERTEX] = vertices;
+	arr[RS::ARRAY_NORMAL] = normals;
+	arr[RS::ARRAY_TANGENT] = tangents;
+	arr[RS::ARRAY_TEX_UV] = uvs;
+	RS::get_singleton()->mesh_add_surface_from_arrays(sphere, RS::PRIMITIVE_TRIANGLES, arr);
 }
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 
-	VS::get_singleton()->free(sphere);
-	VS::get_singleton()->free(sphere_instance);
-	VS::get_singleton()->free(viewport);
-	VS::get_singleton()->free(light);
-	VS::get_singleton()->free(light_instance);
-	VS::get_singleton()->free(light2);
-	VS::get_singleton()->free(light_instance2);
-	VS::get_singleton()->free(camera);
-	VS::get_singleton()->free(scenario);
+	RS::get_singleton()->free(sphere);
+	RS::get_singleton()->free(sphere_instance);
+	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free(light);
+	RS::get_singleton()->free(light_instance);
+	RS::get_singleton()->free(light2);
+	RS::get_singleton()->free(light_instance2);
+	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -521,8 +517,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color");
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
-
-	img->lock();
 
 	if (bg_color.a == 0)
 		bg_color = Color(0, 0, 0, 0);
@@ -593,8 +587,6 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 		col++;
 	}
 
-	img->unlock();
-
 	post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
@@ -617,14 +609,14 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 	Ref<AudioStream> stream = p_from;
 	ERR_FAIL_COND_V(stream.is_null(), Ref<Texture2D>());
 
-	PoolVector<uint8_t> img;
+	Vector<uint8_t> img;
 
 	int w = p_size.x;
 	int h = p_size.y;
 	img.resize(w * h * 3);
 
-	PoolVector<uint8_t>::Write imgdata = img.write();
-	uint8_t *imgw = imgdata.ptr();
+	uint8_t *imgdata = img.ptrw();
+	uint8_t *imgw = imgdata;
 
 	Ref<AudioStreamPlayback> playback = stream->instance_playback();
 	ERR_FAIL_COND_V(playback.is_null(), Ref<Texture2D>());
@@ -680,7 +672,6 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 		}
 	}
 
-	imgdata.release();
 	//post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
@@ -715,7 +706,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	Ref<Mesh> mesh = p_from;
 	ERR_FAIL_COND_V(mesh.is_null(), Ref<Texture2D>());
 
-	VS::get_singleton()->instance_set_base(mesh_instance, mesh->get_rid());
+	RS::get_singleton()->instance_set_base(mesh_instance, mesh->get_rid());
 
 	AABB aabb = mesh->get_aabb();
 	Vector3 ofs = aabb.position + aabb.size * 0.5;
@@ -732,21 +723,21 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	xform.basis.scale(Vector3(m, m, m));
 	xform.origin = -xform.basis.xform(ofs); //-ofs*m;
 	xform.origin.z -= rot_aabb.size.z * 2;
-	VS::get_singleton()->instance_set_transform(mesh_instance, xform);
+	RS::get_singleton()->instance_set_transform(mesh_instance, xform);
 
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 	preview_done = false;
-	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
+	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done) {
 		OS::get_singleton()->delay_usec(10);
 	}
 
-	Ref<Image> img = VS::get_singleton()->texture_2d_get(viewport_texture);
+	Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 	ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
 
-	VS::get_singleton()->instance_set_base(mesh_instance, RID());
+	RS::get_singleton()->instance_set_base(mesh_instance, RID());
 
 	img->convert(Image::FORMAT_RGBA8);
 
@@ -768,49 +759,49 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 
 EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
-	scenario = VS::get_singleton()->scenario_create();
+	scenario = RS::get_singleton()->scenario_create();
 
-	viewport = VS::get_singleton()->viewport_create();
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
-	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
-	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	VS::get_singleton()->viewport_set_active(viewport, true);
-	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+	viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
+	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
+	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
 
-	camera = VS::get_singleton()->camera_create();
-	VS::get_singleton()->viewport_attach_camera(viewport, camera);
-	VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
-	//VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
-	VS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
+	camera = RS::get_singleton()->camera_create();
+	RS::get_singleton()->viewport_attach_camera(viewport, camera);
+	RS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
+	//RS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
+	RS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
-	light = VS::get_singleton()->directional_light_create();
-	light_instance = VS::get_singleton()->instance_create2(light, scenario);
-	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	light = RS::get_singleton()->directional_light_create();
+	light_instance = RS::get_singleton()->instance_create2(light, scenario);
+	RS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = VS::get_singleton()->directional_light_create();
-	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	//VS::get_singleton()->light_set_color(light2, VS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
-	light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
+	light2 = RS::get_singleton()->directional_light_create();
+	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	//RS::get_singleton()->light_set_color(light2, RS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
+	light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
-	VS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
+	RS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	//sphere = VS::get_singleton()->mesh_create();
-	mesh_instance = VS::get_singleton()->instance_create();
-	VS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
+	//sphere = RS::get_singleton()->mesh_create();
+	mesh_instance = RS::get_singleton()->instance_create();
+	RS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
 }
 
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
-	//VS::get_singleton()->free(sphere);
-	VS::get_singleton()->free(mesh_instance);
-	VS::get_singleton()->free(viewport);
-	VS::get_singleton()->free(light);
-	VS::get_singleton()->free(light_instance);
-	VS::get_singleton()->free(light2);
-	VS::get_singleton()->free(light_instance2);
-	VS::get_singleton()->free(camera);
-	VS::get_singleton()->free(scenario);
+	//RS::get_singleton()->free(sphere);
+	RS::get_singleton()->free(mesh_instance);
+	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free(light);
+	RS::get_singleton()->free(light_instance);
+	RS::get_singleton()->free(light2);
+	RS::get_singleton()->free(light_instance2);
+	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(scenario);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -858,16 +849,16 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	font->draw(canvas_item, pos, sampled_text);
 
 	preview_done = false;
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
-	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done) {
 		OS::get_singleton()->delay_usec(10);
 	}
 
-	VS::get_singleton()->canvas_item_clear(canvas_item);
+	RS::get_singleton()->canvas_item_clear(canvas_item);
 
-	Ref<Image> img = VS::get_singleton()->texture_2d_get(viewport_texture);
+	Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 	ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
 
 	img->convert(Image::FORMAT_RGBA8);
@@ -900,22 +891,22 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 
-	viewport = VS::get_singleton()->viewport_create();
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
-	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
-	VS::get_singleton()->viewport_set_active(viewport, true);
-	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+	viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
 
-	canvas = VS::get_singleton()->canvas_create();
-	canvas_item = VS::get_singleton()->canvas_item_create();
+	canvas = RS::get_singleton()->canvas_create();
+	canvas_item = RS::get_singleton()->canvas_item_create();
 
-	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
-	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+	RS::get_singleton()->viewport_attach_canvas(viewport, canvas);
+	RS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 }
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 
-	VS::get_singleton()->free(canvas_item);
-	VS::get_singleton()->free(canvas);
-	VS::get_singleton()->free(viewport);
+	RS::get_singleton()->free(canvas_item);
+	RS::get_singleton()->free(canvas);
+	RS::get_singleton()->free(viewport);
 }

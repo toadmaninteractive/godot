@@ -76,7 +76,7 @@ public:
 	static Crypto *create();
 	static void load_default_certificates(String p_path);
 
-	virtual PoolByteArray generate_random_bytes(int p_bytes);
+	virtual PackedByteArray generate_random_bytes(int p_bytes);
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after);
 
@@ -84,18 +84,14 @@ public:
 };
 
 class ResourceFormatLoaderCrypto : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderCrypto, ResourceFormatLoader);
-
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
 
 class ResourceFormatSaverCrypto : public ResourceFormatSaver {
-	GDCLASS(ResourceFormatSaverCrypto, ResourceFormatSaver);
-
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;

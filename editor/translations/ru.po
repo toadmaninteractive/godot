@@ -32,7 +32,7 @@
 # Vadim Vergasov <vadim.vergasov2003@gmail.com>, 2018, 2019.
 # Аслан Снупов <aslan170505@gmail.com>, 2018.
 # Alexandr Eremeev <ae125529@gmail.com>, 2019.
-# Ruaguzov Michael <miha890r@gmail.com>, 2019.
+# Ruaguzov Michael <miha890r@gmail.com>, 2019, 2020.
 # Alexander Danilov <modos189@protonmail.com>, 2019.
 # Sergey Nakhov <true.stalin.exe@gmail.com>, 2019.
 # Bumerang <it.bumerang@gmail.com>, 2019.
@@ -41,7 +41,7 @@
 # Nikita <iron-nikita@yandex.ru>, 2019.
 # LeLuCh B0й <alekx@alumni.nottingham.ac.uk>, 2019.
 # Арсений Солодков <arsen332211@gmail.com>, 2019.
-# Nikita <yakrobat@protonmail.com>, 2019.
+# Nikita <yakrobat@protonmail.com>, 2019, 2020.
 # LAT_Rio <AlSenya@yandex.ru>, 2019.
 # devnp <dev.necropan@gmail.com>, 2019.
 # Виктор <victor8632@bk.ru>, 2019.
@@ -53,7 +53,7 @@
 # Sergey <www.window1@mail.ru>, 2019.
 # Vladislav <onion.ring@mail.ru>, 2019, 2020.
 # knightpp <kotteam99@gmail.com>, 2019.
-# Константин Рин <email.to.rean@gmail.com>, 2019.
+# Константин Рин <email.to.rean@gmail.com>, 2019, 2020.
 # Maxim Samburskiy <alpacones@outlook.com>, 2019.
 # Dima Koshel <form.eater@gmail.com>, 2019.
 # Danil Alexeev <danil@alexeev.xyz>, 2019, 2020.
@@ -62,11 +62,19 @@
 # Rei <clxgamer12@gmail.com>, 2019.
 # Vitaly <arkology11@gmail.com>, 2019.
 # Andy <8ofproject@gmail.com>, 2020.
+# Андрей Беляков <andbelandantrus@gmail.com>, 2020.
+# Artur Tretiak <stikyt@protonmail.com>, 2020.
+# Smadjavul <o1985af@gmail.com>, 2020.
+# anonymous <noreply@weblate.org>, 2020.
+# Vinsent Insaider_red <vinsent.in7aider@gmail.com>, 2020.
+# TMF <themysticalfox@mail.ru>, 2020.
+# Ivan Kuzmenko <kuzmenko.ivan2002@yandex.com>, 2020.
+# Super Pracion <superpracion2@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-27 07:10+0000\n"
+"PO-Revision-Date: 2020-04-10 09:09+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -76,7 +84,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -91,11 +99,11 @@ msgstr "Ожидалась строка длиной 1 (символ)."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
+msgstr "Недостаточно байтов для декодирования или неверный формат."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Неправильный ввод %i (не был передан) в выражении"
+msgstr "Некорректный ввод %i (не подходит) в выражении"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -223,19 +231,16 @@ msgid "Anim Multi Change Keyframe Time"
 msgstr "Время смены ключевых кадров анимации"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Анимация Многократное изменение Переход"
+msgstr "Многократное изменение перехода"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Анимационное многосменное преобразование"
+msgstr "Анимационное многократное изменение положения"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Анимация многократное изменение ключевых кадров Значение"
+msgstr "Изменить значение ключевого кадра"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
@@ -388,11 +393,11 @@ msgstr "Удалить ключ(и)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Изменить способ обновления анимации"
+msgstr "Изменить режим обновления анимации"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Изменить метод интерполяции анимации"
+msgstr "Изменить режим интерполяции анимации"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
@@ -479,7 +484,6 @@ msgid "Not possible to add a new track without a root"
 msgstr "Нельзя добавить новый трек без корневого узла"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr "Неверный трек для кривой Безье (нет подходящих подсвойств)"
 
@@ -749,8 +753,8 @@ msgid "Line Number:"
 msgstr "Номер строки:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Заменено %d совпадений."
+msgid "%d replaced."
+msgstr "%d заменено."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1503,7 +1507,7 @@ msgstr "Переместить автозагрузку"
 msgid "Remove Autoload"
 msgstr "Удалить автозагрузку"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Включить"
 
@@ -1547,6 +1551,10 @@ msgstr "Название"
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "Синглтон"
+
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Вставить параметры"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1835,7 +1843,7 @@ msgstr "Просмотреть в проводнике"
 msgid "New Folder..."
 msgstr "Новая папка..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Обновить"
@@ -1929,7 +1937,7 @@ msgstr "Обновить файлы."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
-msgstr "Добавить или удалить текущую папку из избранных."
+msgstr "Добавить/убрать текущую папку в избранное."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
@@ -2007,14 +2015,12 @@ msgid "Properties"
 msgstr "Свойства"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "override:"
-msgstr "Переопределить"
+msgstr "Переопределить:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "По умолчанию"
+msgstr "По умолчанию:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2037,9 +2043,8 @@ msgid "Property Descriptions"
 msgstr "Описание свойств"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Значение"
+msgstr "(значение)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2985,8 +2990,13 @@ msgid "Q&A"
 msgstr "Вопросы и ответы"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Система отслеживания ошибок"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Переимпортировать"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3288,7 +3298,7 @@ msgstr "Назначается..."
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
-msgstr "Неверный путь"
+msgstr "Неверный RID"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3403,7 +3413,7 @@ msgstr "Уже существует отредактированная сцен�
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr "Скрипт не соответствует требованиям:"
+msgstr "Не удалось создать экземпляр скрипта:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
@@ -3480,7 +3490,7 @@ msgstr "Неверный формат version.txt файла внутри шаб
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr "Не найден version.txt файл в шаблонах."
+msgstr "Файл version.txt не найден в шаблонах."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:"
@@ -4016,16 +4026,16 @@ msgid "Saving..."
 msgstr "Сохранение..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d файлов"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Установить по умолчанию для '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Очистить по умолчанию для '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Файлы"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4040,8 +4050,9 @@ msgid "Reimport"
 msgstr "Переимпортировать"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
-msgstr "Сохранить сцены, импортировать заново и перезапустить"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
+msgstr "Сохранить сцены, переимпортировать и перезапустить"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -4074,10 +4085,6 @@ msgstr "Сохранить как..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Копировать параметры"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Вставить параметры"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5242,14 +5249,17 @@ msgid ""
 msgstr "Якоря и отступы дочерних контейнеров переопределяются их родителями."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr "Предустановки для якорей и значения отступов контрольного узла."
+msgstr "Пресеты значений для якорей и отступов узла Control."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
-msgstr "При активном движении узлы Control меняют свои якоря вместо полей."
+msgstr ""
+"Когда активно, у перемещаемых узлов Control будут изменяться значения якорей "
+"вместо отступов."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
@@ -5613,9 +5623,8 @@ msgid "Frame Selection"
 msgstr "Кадрировать выбранное"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Canvas Scale"
-msgstr "Предпросмотр масштаба холста"
+msgstr "Масштаб при просмотре холста"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -5653,7 +5662,7 @@ msgstr "Автовставка ключа"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Ключ анимации вставлен."
+msgstr "Опции анимационных Ключей и Позы"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5676,9 +5685,8 @@ msgid "Divide grid step by 2"
 msgstr "Разделить шаг сетки на 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan View"
-msgstr "Вид сзади"
+msgstr "Панорама"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -5765,20 +5773,18 @@ msgstr "Маска излучения"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Solid Pixels"
-msgstr "Твёрдые пиксели"
+msgstr "Сплошные пиксели"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Border Pixels"
-msgstr ""
+msgstr "Граничные пиксели"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Directed Border Pixels"
-msgstr "Направленные граничные пиксели"
+msgstr "Направленные пограничные пиксели"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5901,29 +5907,46 @@ msgid "Mesh is empty!"
 msgstr "Полисетка пуста!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Создать вогнутое статичное тело"
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Невозможно создать треугольную сетку для формы столкновений."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Создать выпуклое статичное тело"
+msgid "Create Static Trimesh Body"
+msgstr "Создать вогнутое статичное тело"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
 msgstr "Это не работает на корне сцены!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Trimesh Static Shape"
-msgstr "Создать вогнутую форму"
+msgstr "Создать треугольную сетку статической формы"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Не удалось создать форму!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+"Не удается создать единственную выпуклую форму столкновения для корня сцены."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
-msgstr "Создать выпуклую форму(ы)"
+msgid "Couldn't create a single convex collision shape."
+msgstr "Не удалось создать одну выпуклую форму столкновений."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Shape"
+msgstr "Создать одну выпуклую форму"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+"Невозможно создать несколько выпуклых форм столкновения для корня сцены."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create any collision shapes."
+msgstr "Не удалось создать ни одной форму столкновения."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Shapes"
+msgstr "Создать несколько выпуклых форм"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5967,24 +5990,74 @@ msgstr "Создать контур"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr "Массив"
+msgstr "Меш"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
 msgstr "Создать вогнутое статичное тело"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Создает StaticBody и автоматически присваивает ему форму столкновения на "
+"основе полигона.\n"
+"Это самый точный (но самый медленный) способ обнаружения столкновений."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Создать вогнутую область столкновения"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
-msgid "Create Convex Collision Sibling(s)"
-msgstr "Создать выпуклую область столкновения"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Создает форму столкновения на основе полигона.\n"
+"Это самый точный (но самый медленный) способ обнаружения столкновений."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Collision Sibling"
+msgstr "Создать одну выпуклую область столкновения"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+"Создаёт выпуклую форму столкновения.\n"
+"Это самый быстрый (но наименее точный) способ обнаружения столкновений."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Создать несколько соседних выпуклых форм столкновения"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
+"Создает форму столкновения на основе полигона.\n"
+"Это средний по производительности вариант между двумя предыдущими."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Создать полисетку обводки..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Создаёт статичную контурную полисетку. Её нормали будут перевёрнуты "
+"автоматически.\n"
+"Она может быть заменой свойству Grow ресурса SpatialMaterial, когда это "
+"свойство невозможно использовать."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -6167,7 +6240,6 @@ msgid "The geometry's faces don't contain any area."
 msgstr "Грани данной геометрии не содержат никакой области."
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "The geometry doesn't contain any faces."
 msgstr "Данная геометрия не содержит граней."
 
@@ -6835,14 +6907,6 @@ msgid "Open Godot online documentation."
 msgstr "Открыть онлайн-документацию Godot."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Проблема"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Помогите улучшить документацию Godot, оставьте сообщение об ошибке."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Поиск справочной документации."
 
@@ -7279,6 +7343,11 @@ msgid "This operation requires a single selected node."
 msgstr "Эта операция требует одного выбранного узла."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Ортогональный"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Блокировать вращение камеры"
 
@@ -7367,6 +7436,10 @@ msgid "Freelook Slow Modifier"
 msgstr "Медленный модификатор свободного просмотра"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Блокировать вращение камеры"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7374,10 +7447,6 @@ msgstr ""
 "Примечание: Отображаемое значение FPS является частотой кадров редактора.\n"
 "Его нельзя использовать в качестве надежного показателя производительности "
 "игры."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Блокировать вращение камеры"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -7597,7 +7666,7 @@ msgstr "Предпросмотр CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
-msgstr "Создан LightOccluder2D"
+msgstr "Создать LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "LightOccluder2D Preview"
@@ -8371,14 +8440,12 @@ msgid "Edit Tile Z Index"
 msgstr "Редактирование Z индекса плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Convex"
-msgstr "Сделать Convex"
+msgstr "Сделать выпуклым"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Concave"
-msgstr "Сделать Concave"
+msgstr "Сделать вогнутым"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -8400,7 +8467,7 @@ msgstr "Набор тайлов"
 msgid "No VCS addons are available."
 msgstr "Нет доступных VCS плагинов."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Ошибка"
 
@@ -8453,9 +8520,8 @@ msgid "Deleted"
 msgstr "Удалён"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Typechange"
-msgstr "Изменить"
+msgstr "Изменить тип"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage Selected"
@@ -8644,9 +8710,8 @@ msgid "Dodge operator."
 msgstr "Оператор выцветания."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "HardLight operator."
-msgstr "Оператор жёсткого света."
+msgstr "Оператор HardLight."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
@@ -9050,12 +9115,12 @@ msgstr "Изменить текстурную единицу"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "2D texture uniform lookup."
-msgstr "Изменить текстурную единицу"
+msgstr "Равномерный поиск 2D-текстур."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "2D texture uniform lookup with triplanar."
-msgstr "Изменить текстурную единицу"
+msgstr "Форменный поиск 2d текстуры с трипланаром."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform function."
@@ -9165,9 +9230,8 @@ msgid "Linear interpolation between two vectors."
 msgstr "Линейная интерполяция между двумя векторами."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Linear interpolation between two vectors using scalar."
-msgstr "Линейная интерполяция между двумя векторами."
+msgstr "Линейная интерполяция между двумя векторами с использованием скаляра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
@@ -9263,7 +9327,7 @@ msgstr "Вычитает вектор из вектора."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector constant."
-msgstr "Векторную константа."
+msgstr "Векторная константа."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector uniform."
@@ -9288,17 +9352,16 @@ msgstr ""
 "направления обзора камеры (пропустите соответствующие входы к ней)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Custom Godot Shader Language expression, which is placed on top of the "
 "resulted shader. You can place various function definitions inside and call "
 "it later in the Expressions. You can also declare varyings, uniforms and "
 "constants."
 msgstr ""
-"Пользовательское выражение языка шейдеров Godot, которое помещается поверх "
-"шейдера. Вы можете разместить внутри различные объявления функций и вызвать "
-"их позже в Выражениях. Вы также можете объявить varyings, uniforms и "
-"константы."
+"Пользовательское выражение на языке шейдеров Godot, которое помещается "
+"поверх шейдера. Вы можете разместить внутри различные объявления функций и "
+"вызвать их позже в Выражениях. Вы также можете объявить переменные типа "
+"varying, uniform и константы."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -9534,7 +9597,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
-msgstr "Ключ шифрования скрипта (256-бит, а в шестнадцатеричном виде):"
+msgstr "Ключ шифрования скрипта (256-бит, в шестнадцатеричном виде):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -9573,25 +9636,30 @@ msgid "Export With Debug"
 msgstr "Экспорт в режиме отладки"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
-msgstr "Путь не существует."
+msgid "The path specified doesn't exist."
+msgstr "Указанный путь не существует."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Ошибка при открытии файла пакета (Не является ZIP форматом)."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"Недействительный '.zip' файл проекта, не содержит файл 'project.godot'."
+"Недействительный \".zip\" файл проекта; не содержит файл \"project.godot\"."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Пожалуйста, выберите пустую папку."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
-msgstr "Пожалуйста, выберите файл 'project.godot' или '.zip'."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "Пожалуйста, выберите файл \"project.godot\" или \".zip\"."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
-msgstr "Каталог уже содержит проект Godot."
+msgid "This directory already contains a Godot project."
+msgstr "Этот каталог уже содержит проект Godot."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -9693,7 +9761,7 @@ msgid ""
 "Not recommended for web games"
 msgstr ""
 "Более высокое качество графики\n"
-"Все функции доступны\n"
+"Доступны все функции\n"
 "Несовместимо со старым оборудованием\n"
 "Не рекомендуется для веб-игр"
 
@@ -10288,6 +10356,10 @@ msgid "Suffix"
 msgstr "Суффикс"
 
 #: editor/rename_dialog.cpp
+msgid "Use Regular Expressions"
+msgstr "Использовать регулярные выражения"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "Дополнительные параметры"
 
@@ -10324,7 +10396,8 @@ msgstr ""
 "Сравните параметры счетчика."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+#, fuzzy
+msgid "Per-level Counter"
 msgstr "Счетчик уровня"
 
 #: editor/rename_dialog.cpp
@@ -10358,10 +10431,6 @@ msgstr ""
 "Недостающие цифры заполняются нулями."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "Регулярное выражение"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "Пост-обработка"
 
@@ -10370,12 +10439,12 @@ msgid "Keep"
 msgstr "Оставить оригинал"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
-msgstr "CamelCase в under_scored"
+msgid "PascalCase to snake_case"
+msgstr "ВерблюжийРегистр в змеиный_регистр"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
-msgstr "under_scored к CamelCase"
+msgid "snake_case to PascalCase"
+msgstr "змеиный_регистр в ВерблюжийРегистр"
 
 #: editor/rename_dialog.cpp
 msgid "Case"
@@ -10392,6 +10461,15 @@ msgstr "В верхний регистр"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Сбросить"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr "Ошибка в регулярном выражении"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "На символе %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10857,8 +10935,9 @@ msgid "Invalid inherited parent name or path."
 msgstr "Неверное имя или путь наследуемого предка."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
-msgstr "Скрипт корректен."
+#, fuzzy
+msgid "Script path/name is valid."
+msgstr "Путь/имя скрипта действителен."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10879,6 +10958,12 @@ msgstr "Будет загружен существующий скрипт."
 #: editor/script_create_dialog.cpp
 msgid "Script file already exists."
 msgstr "Файл скрипта уже существует."
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -10949,6 +11034,11 @@ msgid "Copy Error"
 msgstr "Копировать ошибку"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Video RAM"
+msgstr "Видео память"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "Пропустить точки останова"
 
@@ -10996,10 +11086,6 @@ msgstr "Список использования видеопамяти ресу�
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Всего:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "Видео память"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11332,9 +11418,8 @@ msgid "Cursor Clear Rotation"
 msgstr "Курсор очистить поворот"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Selects"
-msgstr "Очистить выделенное"
+msgstr "Вставить выделение"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11668,7 +11753,7 @@ msgstr "Изменить размер комментария"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
-msgstr "Не удаётся скопировать узел функцию."
+msgstr "Не удаётся копировать узел функции."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
@@ -11720,7 +11805,6 @@ msgid "Editing Signal:"
 msgstr "Редактирование сигнала:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Make Tool:"
 msgstr "Сделать инструментом:"
 
@@ -12361,6 +12445,11 @@ msgstr ""
 "Формы плоскостей не очень хорошо работают и будут удалены в последующих "
 "версиях. Пожалуйста, не используйте их."
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr "ConcavePolygonShape поддерживает RigidBody только в статичном режиме."
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Ничто не видно, потому что не назначена сетка."
@@ -12659,6 +12748,10 @@ msgstr ""
 "сделайте её целью рендеринга и назначьте её внутреннюю текстуру какому-либо "
 "узлу для отображения."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Неверный источник для предпросмотра."
@@ -12686,6 +12779,24 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Система отслеживания ошибок"
+
+#~ msgid "Request Docs"
+#~ msgstr "Проблема"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Помогите улучшить документацию Godot, оставьте сообщение об ошибке."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Заменено %d совпадений."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Создать выпуклое статичное тело"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Не удалось создать форму!"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

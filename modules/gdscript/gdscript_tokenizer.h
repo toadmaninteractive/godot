@@ -32,6 +32,7 @@
 #define GDSCRIPT_TOKENIZER_H
 
 #include "core/pair.h"
+#include "core/set.h"
 #include "core/string_name.h"
 #include "core/ustring.h"
 #include "core/variant.h"
@@ -113,9 +114,7 @@ public:
 		TK_PR_SIGNAL,
 		TK_PR_BREAKPOINT,
 		TK_PR_REMOTE,
-		TK_PR_SYNC,
 		TK_PR_MASTER,
-		TK_PR_SLAVE, // Deprecated by TK_PR_PUPPET, to remove in 4.0
 		TK_PR_PUPPET,
 		TK_PR_REMOTESYNC,
 		TK_PR_MASTERSYNC,
@@ -172,7 +171,7 @@ public:
 	virtual String get_token_error(int p_offset = 0) const = 0;
 	virtual void advance(int p_amount = 1) = 0;
 #ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String> > &get_warning_skips() const = 0;
+	virtual const Vector<Pair<int, String>> &get_warning_skips() const = 0;
 	virtual const Set<String> &get_warning_global_skips() const = 0;
 	virtual bool is_ignoring_warnings() const = 0;
 #endif // DEBUG_ENABLED
@@ -225,7 +224,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	bool error_flag;
 
 #ifdef DEBUG_ENABLED
-	Vector<Pair<int, String> > warning_skips;
+	Vector<Pair<int, String>> warning_skips;
 	Set<String> warning_global_skips;
 	bool ignore_warnings;
 #endif // DEBUG_ENABLED
@@ -246,7 +245,7 @@ public:
 	virtual String get_token_error(int p_offset = 0) const;
 	virtual void advance(int p_amount = 1);
 #ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String> > &get_warning_skips() const { return warning_skips; }
+	virtual const Vector<Pair<int, String>> &get_warning_skips() const { return warning_skips; }
 	virtual const Set<String> &get_warning_global_skips() const { return warning_global_skips; }
 	virtual bool is_ignoring_warnings() const { return ignore_warnings; }
 #endif // DEBUG_ENABLED
@@ -285,8 +284,8 @@ public:
 	virtual String get_token_error(int p_offset = 0) const;
 	virtual void advance(int p_amount = 1);
 #ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String> > &get_warning_skips() const {
-		static Vector<Pair<int, String> > v;
+	virtual const Vector<Pair<int, String>> &get_warning_skips() const {
+		static Vector<Pair<int, String>> v;
 		return v;
 	}
 	virtual const Set<String> &get_warning_global_skips() const {

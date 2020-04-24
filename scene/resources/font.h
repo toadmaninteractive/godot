@@ -108,7 +108,7 @@ class BitmapFont : public Font {
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
 
-	Vector<Ref<Texture2D> > textures;
+	Vector<Ref<Texture2D>> textures;
 
 public:
 	struct Character {
@@ -146,10 +146,10 @@ private:
 	float ascent;
 	bool distance_field_hint;
 
-	void _set_chars(const PoolVector<int> &p_chars);
-	PoolVector<int> _get_chars() const;
-	void _set_kernings(const PoolVector<int> &p_kernings);
-	PoolVector<int> _get_kernings() const;
+	void _set_chars(const Vector<int> &p_chars);
+	Vector<int> _get_chars() const;
+	void _set_kernings(const Vector<int> &p_kernings);
+	Vector<int> _get_kernings() const;
 	void _set_textures(const Vector<Variant> &p_textures);
 	Vector<Variant> _get_textures() const;
 
@@ -200,7 +200,7 @@ public:
 
 class ResourceFormatLoaderBMFont : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

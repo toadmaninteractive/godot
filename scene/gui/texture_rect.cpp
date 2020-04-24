@@ -30,7 +30,7 @@
 
 #include "texture_rect.h"
 #include "core/core_string_names.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 void TextureRect::_notification(int p_what) {
 
@@ -95,6 +95,15 @@ void TextureRect::_notification(int p_what) {
 			} break;
 		}
 
+		Ref<AtlasTexture> p_atlas = texture;
+
+		if (p_atlas.is_valid() && region.has_no_area()) {
+			Size2 scale_size(size.width / texture->get_width(), size.height / texture->get_height());
+
+			offset.width += hflip ? p_atlas->get_margin().get_position().width * scale_size.width * 2 : 0;
+			offset.height += vflip ? p_atlas->get_margin().get_position().height * scale_size.height * 2 : 0;
+		}
+
 		size.width *= hflip ? -1.0f : 1.0f;
 		size.height *= vflip ? -1.0f : 1.0f;
 
@@ -127,7 +136,6 @@ void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &TextureRect::is_flipped_v);
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "stretch_mode"), &TextureRect::set_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureRect::get_stretch_mode);
-	ClassDB::bind_method(D_METHOD("_texture_changed"), &TextureRect::_texture_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
@@ -160,13 +168,13 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureRect::_texture_changed));
 	}
 
 	texture = p_tex;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureRect::_texture_changed));
 	}
 
 	update();

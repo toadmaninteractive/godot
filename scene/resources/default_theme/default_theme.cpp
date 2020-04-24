@@ -38,7 +38,7 @@
 #include "font_hidpi.inc"
 #include "font_lodpi.inc"
 
-typedef Map<const void *, Ref<ImageTexture> > TexCacheMap;
+typedef Map<const void *, Ref<ImageTexture>> TexCacheMap;
 
 static TexCacheMap *tex_cache;
 static float scale = 1;
@@ -188,6 +188,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Panel
 
 	theme->set_stylebox("panel", "Panel", make_stylebox(panel_bg_png, 0, 0, 0, 0));
+	theme->set_stylebox("panel_fg", "Panel", make_stylebox(panel_bg_png, 0, 0, 0, 0));
 
 	// Focus
 
@@ -496,6 +497,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("slider", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_area", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
+	theme->set_stylebox("grabber_area_highlight", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 
 	theme->set_icon("grabber", "HSlider", make_icon(hslider_grabber_png));
 	theme->set_icon("grabber_highlight", "HSlider", make_icon(hslider_grabber_hl_png));
@@ -506,6 +508,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("slider", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_area", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
+	theme->set_stylebox("grabber_area_highlight", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 
 	theme->set_icon("grabber", "VSlider", make_icon(vslider_grabber_png));
 	theme->set_icon("grabber_highlight", "VSlider", make_icon(vslider_grabber_hl_png));
@@ -523,17 +526,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// WindowDialog
 
-	theme->set_stylebox("panel", "WindowDialog", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
-	theme->set_constant("scaleborder_size", "WindowDialog", 4 * scale);
+	theme->set_stylebox("panel", "Window", default_style);
+	theme->set_stylebox("window_panel", "Window", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
+	theme->set_constant("scaleborder_size", "Window", 4 * scale);
 
-	theme->set_font("title_font", "WindowDialog", large_font);
-	theme->set_color("title_color", "WindowDialog", Color(0, 0, 0));
-	theme->set_constant("title_height", "WindowDialog", 20 * scale);
+	theme->set_font("title_font", "Window", large_font);
+	theme->set_color("title_color", "Window", Color(0, 0, 0));
+	theme->set_constant("title_height", "Window", 20 * scale);
+	theme->set_constant("resize_margin", "Window", 4 * scale);
 
-	theme->set_icon("close", "WindowDialog", make_icon(close_png));
-	theme->set_icon("close_highlight", "WindowDialog", make_icon(close_hl_png));
-	theme->set_constant("close_h_ofs", "WindowDialog", 18 * scale);
-	theme->set_constant("close_v_ofs", "WindowDialog", 18 * scale);
+	theme->set_icon("close", "Window", make_icon(close_png));
+	theme->set_icon("close_highlight", "Window", make_icon(close_hl_png));
+	theme->set_constant("close_h_ofs", "Window", 18 * scale);
+	theme->set_constant("close_v_ofs", "Window", 18 * scale);
 
 	// File Dialog
 
@@ -706,9 +711,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
-	theme->set_constant("top_margin", "TabContainer", 24 * scale);
-	theme->set_constant("label_valign_fg", "TabContainer", 0 * scale);
-	theme->set_constant("label_valign_bg", "TabContainer", 2 * scale);
 	theme->set_constant("hseparation", "TabContainer", 4 * scale);
 
 	// Tabs
@@ -732,9 +734,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_bg", "Tabs", control_font_color_low);
 	theme->set_color("font_color_disabled", "Tabs", control_font_color_disabled);
 
-	theme->set_constant("top_margin", "Tabs", 24 * scale);
-	theme->set_constant("label_valign_fg", "Tabs", 0 * scale);
-	theme->set_constant("label_valign_bg", "Tabs", 2 * scale);
 	theme->set_constant("hseparation", "Tabs", 4 * scale);
 
 	// Separators
@@ -893,9 +892,9 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 
 void clear_default_theme() {
 
-	Theme::set_project_default(NULL);
-	Theme::set_default(NULL);
-	Theme::set_default_icon(NULL);
-	Theme::set_default_style(NULL);
-	Theme::set_default_font(NULL);
+	Theme::set_project_default(nullptr);
+	Theme::set_default(nullptr);
+	Theme::set_default_icon(nullptr);
+	Theme::set_default_style(nullptr);
+	Theme::set_default_font(nullptr);
 }

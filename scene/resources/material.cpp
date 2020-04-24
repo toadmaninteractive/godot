@@ -40,7 +40,7 @@
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 
-	for (Ref<Material> pass_child = p_pass; pass_child != NULL; pass_child = pass_child->get_next_pass()) {
+	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 
@@ -51,7 +51,7 @@ void Material::set_next_pass(const Ref<Material> &p_pass) {
 	RID next_pass_rid;
 	if (next_pass.is_valid())
 		next_pass_rid = next_pass->get_rid();
-	VS::get_singleton()->material_set_next_pass(material, next_pass_rid);
+	RS::get_singleton()->material_set_next_pass(material, next_pass_rid);
 }
 
 Ref<Material> Material::get_next_pass() const {
@@ -64,7 +64,7 @@ void Material::set_render_priority(int p_priority) {
 	ERR_FAIL_COND(p_priority < RENDER_PRIORITY_MIN);
 	ERR_FAIL_COND(p_priority > RENDER_PRIORITY_MAX);
 	render_priority = p_priority;
-	VS::get_singleton()->material_set_render_priority(material, p_priority);
+	RS::get_singleton()->material_set_render_priority(material, p_priority);
 }
 
 int Material::get_render_priority() const {
@@ -100,13 +100,13 @@ void Material::_bind_methods() {
 
 Material::Material() {
 
-	material = VisualServer::get_singleton()->material_create();
+	material = RenderingServer::get_singleton()->material_create();
 	render_priority = 0;
 }
 
 Material::~Material() {
 
-	VisualServer::get_singleton()->free(material);
+	RenderingServer::get_singleton()->free(material);
 }
 
 ///////////////////////////////////
@@ -126,7 +126,7 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 		if (pr) {
-			VisualServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
+			RenderingServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
 			return true;
 		}
 	}
@@ -150,7 +150,7 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		if (pr) {
-			r_ret = VisualServer::get_singleton()->material_get_param(_get_material(), pr);
+			r_ret = RenderingServer::get_singleton()->material_get_param(_get_material(), pr);
 			return true;
 		}
 	}
@@ -171,7 +171,7 @@ bool ShaderMaterial::property_can_revert(const String &p_name) {
 
 		StringName pr = shader->remap_param(p_name);
 		if (pr) {
-			Variant default_value = VisualServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
+			Variant default_value = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
 			Variant current_value;
 			_get(p_name, current_value);
 			return default_value.get_type() != Variant::NIL && default_value != current_value;
@@ -185,7 +185,7 @@ Variant ShaderMaterial::property_get_revert(const String &p_name) {
 	if (shader.is_valid()) {
 		StringName pr = shader->remap_param(p_name);
 		if (pr) {
-			r_ret = VisualServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
+			r_ret = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
 		}
 	}
 	return r_ret;
@@ -197,7 +197,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	// This can be a slow operation, and `_change_notify()` (which is called by `_shader_changed()`)
 	// does nothing in non-editor builds anyway. See GH-34741 for details.
 	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
-		shader->disconnect("changed", this, "_shader_changed");
+		shader->disconnect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
 	}
 
 	shader = p_shader;
@@ -207,11 +207,11 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 		rid = shader->get_rid();
 
 		if (Engine::get_singleton()->is_editor_hint()) {
-			shader->connect("changed", this, "_shader_changed");
+			shader->connect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
 		}
 	}
 
-	VS::get_singleton()->material_set_shader(_get_material(), rid);
+	RS::get_singleton()->material_set_shader(_get_material(), rid);
 	_change_notify(); //properties for shader exposed
 	emit_changed();
 }
@@ -223,12 +223,12 @@ Ref<Shader> ShaderMaterial::get_shader() const {
 
 void ShaderMaterial::set_shader_param(const StringName &p_param, const Variant &p_value) {
 
-	VS::get_singleton()->material_set_param(_get_material(), p_param, p_value);
+	RS::get_singleton()->material_set_param(_get_material(), p_param, p_value);
 }
 
 Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
 
-	return VS::get_singleton()->material_get_param(_get_material(), p_param);
+	return RS::get_singleton()->material_get_param(_get_material(), p_param);
 }
 
 void ShaderMaterial::_shader_changed() {
@@ -241,7 +241,6 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
 	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
-	ClassDB::bind_method(D_METHOD("_shader_changed"), &ShaderMaterial::_shader_changed);
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ShaderMaterial::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ShaderMaterial::property_get_revert);
 
@@ -290,16 +289,12 @@ ShaderMaterial::~ShaderMaterial() {
 
 /////////////////////////////////
 
-Mutex *BaseMaterial3D::material_mutex = NULL;
-SelfList<BaseMaterial3D>::List *BaseMaterial3D::dirty_materials = NULL;
+Mutex BaseMaterial3D::material_mutex;
+SelfList<BaseMaterial3D>::List *BaseMaterial3D::dirty_materials = nullptr;
 Map<BaseMaterial3D::MaterialKey, BaseMaterial3D::ShaderData> BaseMaterial3D::shader_map;
-BaseMaterial3D::ShaderNames *BaseMaterial3D::shader_names = NULL;
+BaseMaterial3D::ShaderNames *BaseMaterial3D::shader_names = nullptr;
 
 void BaseMaterial3D::init_shaders() {
-
-#ifndef NO_THREADS
-	material_mutex = Mutex::create();
-#endif
 
 	dirty_materials = memnew(SelfList<BaseMaterial3D>::List);
 
@@ -319,7 +314,7 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->anisotropy = "anisotropy_ratio";
 	shader_names->heightmap_scale = "heightmap_scale";
 	shader_names->subsurface_scattering_strength = "subsurface_scattering_strength";
-	shader_names->transmission = "transmission";
+	shader_names->backlight = "backlight";
 	shader_names->refraction = "refraction";
 	shader_names->point_size = "point_size";
 	shader_names->uv1_scale = "uv1_scale";
@@ -352,6 +347,11 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->refraction_texture_channel = "refraction_texture_channel";
 	shader_names->alpha_scissor_threshold = "alpha_scissor_threshold";
 
+	shader_names->transmittance_color = "transmittance_color";
+	shader_names->transmittance_curve = "transmittance_curve";
+	shader_names->transmittance_depth = "transmittance_depth";
+	shader_names->transmittance_boost = "transmittance_boost";
+
 	shader_names->texture_names[TEXTURE_ALBEDO] = "texture_albedo";
 	shader_names->texture_names[TEXTURE_METALLIC] = "texture_metallic";
 	shader_names->texture_names[TEXTURE_ROUGHNESS] = "texture_roughness";
@@ -363,7 +363,8 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_AMBIENT_OCCLUSION] = "texture_ambient_occlusion";
 	shader_names->texture_names[TEXTURE_HEIGHTMAP] = "texture_heightmap";
 	shader_names->texture_names[TEXTURE_SUBSURFACE_SCATTERING] = "texture_subsurface_scattering";
-	shader_names->texture_names[TEXTURE_TRANSMISSION] = "texture_transmission";
+	shader_names->texture_names[TEXTURE_SUBSURFACE_TRANSMITTANCE] = "texture_subsurface_transmittance";
+	shader_names->texture_names[TEXTURE_BACKLIGHT] = "texture_backlight";
 	shader_names->texture_names[TEXTURE_REFRACTION] = "texture_refraction";
 	shader_names->texture_names[TEXTURE_DETAIL_MASK] = "texture_detail_mask";
 	shader_names->texture_names[TEXTURE_DETAIL_ALBEDO] = "texture_detail_albedo";
@@ -379,12 +380,8 @@ void BaseMaterial3D::finish_shaders() {
 		materials_for_2d[i].unref();
 	}
 
-#ifndef NO_THREADS
-	memdelete(material_mutex);
-#endif
-
 	memdelete(dirty_materials);
-	dirty_materials = NULL;
+	dirty_materials = nullptr;
 
 	memdelete(shader_names);
 }
@@ -394,14 +391,14 @@ void BaseMaterial3D::_update_shader() {
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
-	if (mk.key == current_key.key)
+	if (mk == current_key)
 		return; //no update required in the end
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
-			VS::get_singleton()->free(shader_map[current_key].shader);
+			RS::get_singleton()->free(shader_map[current_key].shader);
 			shader_map.erase(current_key);
 		}
 	}
@@ -410,7 +407,7 @@ void BaseMaterial3D::_update_shader() {
 
 	if (shader_map.has(mk)) {
 
-		VS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
+		RS::get_singleton()->material_set_shader(_get_material(), shader_map[mk].shader);
 		shader_map[mk].users++;
 		return;
 	}
@@ -419,10 +416,11 @@ void BaseMaterial3D::_update_shader() {
 	switch (texture_filter) {
 		case TEXTURE_FILTER_NEAREST: texfilter_str = "filter_nearest"; break;
 		case TEXTURE_FILTER_LINEAR: texfilter_str = "filter_linear"; break;
-		case TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS: texfilter_str = "filter_nearest_mipmap"; break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: texfilter_str = "filter_nearest_mipmap"; break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: texfilter_str = "filter_linear_mipmap"; break;
-		case TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC: texfilter_str = "filter_nearest_mipmap_aniso"; break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: texfilter_str = "filter_nearest_mipmap_aniso"; break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: texfilter_str = "filter_linear_mipmap_aniso"; break;
+		case TEXTURE_FILTER_MAX: break; // Internal value, skip.
 	}
 
 	if (flags[FLAG_USE_TEXTURE_REPEAT]) {
@@ -474,6 +472,9 @@ void BaseMaterial3D::_update_shader() {
 		case SPECULAR_PHONG: code += ",specular_phong"; break;
 		case SPECULAR_TOON: code += ",specular_toon"; break;
 		case SPECULAR_DISABLED: code += ",specular_disabled"; break;
+	}
+	if (features[FEATURE_SUBSURFACE_SCATTERING] && flags[FLAG_SUBSURFACE_MODE_SKIN]) {
+		code += ",sss_mode_skin";
 	}
 
 	if (shading_mode == SHADING_MODE_UNSHADED) {
@@ -594,16 +595,25 @@ void BaseMaterial3D::_update_shader() {
 		code += "uniform sampler2D texture_detail_mask : hint_white," + texfilter_str + ";\n";
 	}
 
-	if (features[FEATURE_SUBSURACE_SCATTERING]) {
+	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 
 		code += "uniform float subsurface_scattering_strength : hint_range(0,1);\n";
 		code += "uniform sampler2D texture_subsurface_scattering : hint_white," + texfilter_str + ";\n";
 	}
 
-	if (features[FEATURE_TRANSMISSION]) {
+	if (features[FEATURE_SUBSURFACE_TRANSMITTANCE]) {
 
-		code += "uniform vec4 transmission : hint_color;\n";
-		code += "uniform sampler2D texture_transmission : hint_black," + texfilter_str + ";\n";
+		code += "uniform vec4 transmittance_color : hint_color;\n";
+		code += "uniform float transmittance_depth;\n";
+		code += "uniform sampler2D texture_subsurface_transmittance : hint_white," + texfilter_str + ";\n";
+		code += "uniform float transmittance_curve;\n";
+		code += "uniform float transmittance_boost;\n";
+	}
+
+	if (features[FEATURE_BACKLIGHT]) {
+
+		code += "uniform vec4 backlight : hint_color;\n";
+		code += "uniform sampler2D texture_backlight : hint_black," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_HEIGHT_MAPPING]) {
@@ -781,7 +791,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tvec2 base_uv2 = UV2;\n";
 	}
 
-	if (!VisualServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //heightmap not supported with triplanar
+	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //heightmap not supported with triplanar
 		code += "\t{\n";
 		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*heightmap_flip.x,-BINORMAL*heightmap_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
 
@@ -961,7 +971,7 @@ void BaseMaterial3D::_update_shader() {
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 
-			if (!VisualServer::get_singleton()->is_low_end()) {
+			if (!RenderingServer::get_singleton()->is_low_end()) {
 				code += "\t{\n";
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
 					code += "\t\tfloat fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
@@ -1056,7 +1066,7 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tAO_LIGHT_AFFECT = ao_light_affect;\n";
 	}
 
-	if (features[FEATURE_SUBSURACE_SCATTERING]) {
+	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 			code += "\tfloat sss_tex = triplanar_texture(texture_subsurface_scattering,uv1_power_normal,uv1_triplanar_pos).r;\n";
@@ -1066,13 +1076,27 @@ void BaseMaterial3D::_update_shader() {
 		code += "\tSSS_STRENGTH=subsurface_scattering_strength*sss_tex;\n";
 	}
 
-	if (features[FEATURE_TRANSMISSION]) {
+	if (features[FEATURE_SUBSURFACE_TRANSMITTANCE]) {
+
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec3 transmission_tex = triplanar_texture(texture_transmission,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+			code += "\tvec4 trans_color_tex = triplanar_texture(texture_subsurface_transmittance,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
-			code += "\tvec3 transmission_tex = texture(texture_transmission,base_uv).rgb;\n";
+			code += "\tvec4 trans_color_tex = texture(texture_subsurface_transmittance,base_uv);\n";
 		}
-		code += "\tTRANSMISSION = (transmission.rgb+transmission_tex);\n";
+		code += "\tSSS_TRANSMITTANCE_COLOR=transmittance_color*trans_color_tex;\n";
+
+		code += "\tSSS_TRANSMITTANCE_DEPTH=transmittance_depth;\n";
+		code += "\tSSS_TRANSMITTANCE_CURVE=transmittance_curve;\n";
+		code += "\tSSS_TRANSMITTANCE_BOOST=transmittance_boost;\n";
+	}
+
+	if (features[FEATURE_BACKLIGHT]) {
+		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+			code += "\tvec3 backlight_tex = triplanar_texture(texture_backlight,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+		} else {
+			code += "\tvec3 backlight_tex = texture(texture_backlight,base_uv).rgb;\n";
+		}
+		code += "\tBACKLIGHT = (backlight.rgb+backlight_tex);\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -1120,62 +1144,46 @@ void BaseMaterial3D::_update_shader() {
 	code += "}\n";
 
 	ShaderData shader_data;
-	shader_data.shader = VS::get_singleton()->shader_create();
+	shader_data.shader = RS::get_singleton()->shader_create();
 	shader_data.users = 1;
 
-	VS::get_singleton()->shader_set_code(shader_data.shader, code);
+	RS::get_singleton()->shader_set_code(shader_data.shader, code);
 
 	shader_map[mk] = shader_data;
 
-	VS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
+	RS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
 }
 
 void BaseMaterial3D::flush_changes() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	MutexLock lock(material_mutex);
 
 	while (dirty_materials->first()) {
 
 		dirty_materials->first()->self()->_update_shader();
 	}
-
-	if (material_mutex)
-		material_mutex->unlock();
 }
 
 void BaseMaterial3D::_queue_shader_change() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	MutexLock lock(material_mutex);
 
 	if (!element.in_list()) {
 		dirty_materials->add(&element);
 	}
-
-	if (material_mutex)
-		material_mutex->unlock();
 }
 
 bool BaseMaterial3D::_is_shader_dirty() const {
 
-	bool dirty = false;
+	MutexLock lock(material_mutex);
 
-	if (material_mutex)
-		material_mutex->lock();
-
-	dirty = element.in_list();
-
-	if (material_mutex)
-		material_mutex->unlock();
-
-	return dirty;
+	return element.in_list();
 }
 void BaseMaterial3D::set_albedo(const Color &p_albedo) {
 
 	albedo = p_albedo;
 
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->albedo, p_albedo);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->albedo, p_albedo);
 }
 
 Color BaseMaterial3D::get_albedo() const {
@@ -1186,7 +1194,7 @@ Color BaseMaterial3D::get_albedo() const {
 void BaseMaterial3D::set_specular(float p_specular) {
 
 	specular = p_specular;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->specular, p_specular);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->specular, p_specular);
 }
 
 float BaseMaterial3D::get_specular() const {
@@ -1197,7 +1205,7 @@ float BaseMaterial3D::get_specular() const {
 void BaseMaterial3D::set_roughness(float p_roughness) {
 
 	roughness = p_roughness;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->roughness, p_roughness);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->roughness, p_roughness);
 }
 
 float BaseMaterial3D::get_roughness() const {
@@ -1208,7 +1216,7 @@ float BaseMaterial3D::get_roughness() const {
 void BaseMaterial3D::set_metallic(float p_metallic) {
 
 	metallic = p_metallic;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->metallic, p_metallic);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->metallic, p_metallic);
 }
 
 float BaseMaterial3D::get_metallic() const {
@@ -1219,7 +1227,7 @@ float BaseMaterial3D::get_metallic() const {
 void BaseMaterial3D::set_emission(const Color &p_emission) {
 
 	emission = p_emission;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->emission, p_emission);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->emission, p_emission);
 }
 Color BaseMaterial3D::get_emission() const {
 
@@ -1229,7 +1237,7 @@ Color BaseMaterial3D::get_emission() const {
 void BaseMaterial3D::set_emission_energy(float p_emission_energy) {
 
 	emission_energy = p_emission_energy;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, p_emission_energy);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, p_emission_energy);
 }
 float BaseMaterial3D::get_emission_energy() const {
 
@@ -1239,7 +1247,7 @@ float BaseMaterial3D::get_emission_energy() const {
 void BaseMaterial3D::set_normal_scale(float p_normal_scale) {
 
 	normal_scale = p_normal_scale;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->normal_scale, p_normal_scale);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->normal_scale, p_normal_scale);
 }
 float BaseMaterial3D::get_normal_scale() const {
 
@@ -1249,7 +1257,7 @@ float BaseMaterial3D::get_normal_scale() const {
 void BaseMaterial3D::set_rim(float p_rim) {
 
 	rim = p_rim;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->rim, p_rim);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->rim, p_rim);
 }
 float BaseMaterial3D::get_rim() const {
 
@@ -1259,7 +1267,7 @@ float BaseMaterial3D::get_rim() const {
 void BaseMaterial3D::set_rim_tint(float p_rim_tint) {
 
 	rim_tint = p_rim_tint;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->rim_tint, p_rim_tint);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->rim_tint, p_rim_tint);
 }
 float BaseMaterial3D::get_rim_tint() const {
 
@@ -1269,7 +1277,7 @@ float BaseMaterial3D::get_rim_tint() const {
 void BaseMaterial3D::set_ao_light_affect(float p_ao_light_affect) {
 
 	ao_light_affect = p_ao_light_affect;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_light_affect, p_ao_light_affect);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->ao_light_affect, p_ao_light_affect);
 }
 float BaseMaterial3D::get_ao_light_affect() const {
 
@@ -1279,7 +1287,7 @@ float BaseMaterial3D::get_ao_light_affect() const {
 void BaseMaterial3D::set_clearcoat(float p_clearcoat) {
 
 	clearcoat = p_clearcoat;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat, p_clearcoat);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat, p_clearcoat);
 }
 
 float BaseMaterial3D::get_clearcoat() const {
@@ -1290,7 +1298,7 @@ float BaseMaterial3D::get_clearcoat() const {
 void BaseMaterial3D::set_clearcoat_gloss(float p_clearcoat_gloss) {
 
 	clearcoat_gloss = p_clearcoat_gloss;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat_gloss, p_clearcoat_gloss);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->clearcoat_gloss, p_clearcoat_gloss);
 }
 
 float BaseMaterial3D::get_clearcoat_gloss() const {
@@ -1301,7 +1309,7 @@ float BaseMaterial3D::get_clearcoat_gloss() const {
 void BaseMaterial3D::set_anisotropy(float p_anisotropy) {
 
 	anisotropy = p_anisotropy;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->anisotropy, p_anisotropy);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->anisotropy, p_anisotropy);
 }
 float BaseMaterial3D::get_anisotropy() const {
 
@@ -1311,7 +1319,7 @@ float BaseMaterial3D::get_anisotropy() const {
 void BaseMaterial3D::set_heightmap_scale(float p_heightmap_scale) {
 
 	heightmap_scale = p_heightmap_scale;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_scale, p_heightmap_scale);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_scale, p_heightmap_scale);
 }
 
 float BaseMaterial3D::get_heightmap_scale() const {
@@ -1322,7 +1330,7 @@ float BaseMaterial3D::get_heightmap_scale() const {
 void BaseMaterial3D::set_subsurface_scattering_strength(float p_subsurface_scattering_strength) {
 
 	subsurface_scattering_strength = p_subsurface_scattering_strength;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->subsurface_scattering_strength, subsurface_scattering_strength);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->subsurface_scattering_strength, subsurface_scattering_strength);
 }
 
 float BaseMaterial3D::get_subsurface_scattering_strength() const {
@@ -1330,21 +1338,54 @@ float BaseMaterial3D::get_subsurface_scattering_strength() const {
 	return subsurface_scattering_strength;
 }
 
-void BaseMaterial3D::set_transmission(const Color &p_transmission) {
-
-	transmission = p_transmission;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->transmission, transmission);
+void BaseMaterial3D::set_transmittance_color(const Color &p_color) {
+	transmittance_color = p_color;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_color, p_color);
 }
 
-Color BaseMaterial3D::get_transmission() const {
+Color BaseMaterial3D::get_transmittance_color() const {
+	return transmittance_color;
+}
 
-	return transmission;
+void BaseMaterial3D::set_transmittance_depth(float p_depth) {
+	transmittance_depth = p_depth;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_depth, p_depth);
+}
+float BaseMaterial3D::get_transmittance_depth() const {
+	return transmittance_depth;
+}
+
+void BaseMaterial3D::set_transmittance_curve(float p_curve) {
+	transmittance_curve = p_curve;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_curve, p_curve);
+}
+float BaseMaterial3D::get_transmittance_curve() const {
+	return transmittance_curve;
+}
+
+void BaseMaterial3D::set_transmittance_boost(float p_boost) {
+	transmittance_boost = p_boost;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_boost, p_boost);
+}
+float BaseMaterial3D::get_transmittance_boost() const {
+	return transmittance_boost;
+}
+
+void BaseMaterial3D::set_backlight(const Color &p_backlight) {
+
+	backlight = p_backlight;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->backlight, backlight);
+}
+
+Color BaseMaterial3D::get_backlight() const {
+
+	return backlight;
 }
 
 void BaseMaterial3D::set_refraction(float p_refraction) {
 
 	refraction = p_refraction;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction, refraction);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->refraction, refraction);
 }
 
 float BaseMaterial3D::get_refraction() const {
@@ -1478,7 +1519,7 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 		return;
 
 	flags[p_flag] = p_enabled;
-	if ((p_flag == FLAG_USE_SHADOW_TO_OPACITY) || (p_flag == FLAG_USE_TEXTURE_REPEAT)) {
+	if (p_flag == FLAG_USE_SHADOW_TO_OPACITY || p_flag == FLAG_USE_TEXTURE_REPEAT || p_flag == FLAG_SUBSURFACE_MODE_SKIN) {
 		_change_notify();
 	}
 	_queue_shader_change();
@@ -1512,7 +1553,7 @@ void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_t
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
 	_change_notify();
 	_queue_shader_change();
 }
@@ -1561,8 +1602,8 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	_validate_feature("anisotropy", FEATURE_ANISOTROPY, property);
 	_validate_feature("ao", FEATURE_AMBIENT_OCCLUSION, property);
 	_validate_feature("heightmap", FEATURE_HEIGHT_MAPPING, property);
-	_validate_feature("subsurf_scatter", FEATURE_SUBSURACE_SCATTERING, property);
-	_validate_feature("transmission", FEATURE_TRANSMISSION, property);
+	_validate_feature("subsurf_scatter", FEATURE_SUBSURFACE_SCATTERING, property);
+	_validate_feature("backlight", FEATURE_BACKLIGHT, property);
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
@@ -1593,6 +1634,10 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if ((property.name == "heightmap_min_layers" || property.name == "heightmap_max_layers") && !deep_parallax) {
+		property.usage = 0;
+	}
+
+	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (property.name == "subsurf_scatter_transmittance_color" || property.name == "subsurf_scatter_transmittance_texture" || property.name == "subsurf_scatter_transmittance_curve")) {
 		property.usage = 0;
 	}
 
@@ -1652,7 +1697,11 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 			property.usage = 0;
 		}
 
-		if (property.name.begins_with("transmission")) {
+		if (property.name.begins_with("backlight")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("transmittance")) {
 			property.usage = 0;
 		}
 	}
@@ -1661,7 +1710,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 void BaseMaterial3D::set_point_size(float p_point_size) {
 
 	point_size = p_point_size;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->point_size, p_point_size);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->point_size, p_point_size);
 }
 
 float BaseMaterial3D::get_point_size() const {
@@ -1672,7 +1721,7 @@ float BaseMaterial3D::get_point_size() const {
 void BaseMaterial3D::set_uv1_scale(const Vector3 &p_scale) {
 
 	uv1_scale = p_scale;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_scale, p_scale);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_scale, p_scale);
 }
 
 Vector3 BaseMaterial3D::get_uv1_scale() const {
@@ -1683,7 +1732,7 @@ Vector3 BaseMaterial3D::get_uv1_scale() const {
 void BaseMaterial3D::set_uv1_offset(const Vector3 &p_offset) {
 
 	uv1_offset = p_offset;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_offset, p_offset);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_offset, p_offset);
 }
 Vector3 BaseMaterial3D::get_uv1_offset() const {
 
@@ -1693,7 +1742,7 @@ Vector3 BaseMaterial3D::get_uv1_offset() const {
 void BaseMaterial3D::set_uv1_triplanar_blend_sharpness(float p_sharpness) {
 
 	uv1_triplanar_sharpness = p_sharpness;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_blend_sharpness, p_sharpness);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_blend_sharpness, p_sharpness);
 }
 
 float BaseMaterial3D::get_uv1_triplanar_blend_sharpness() const {
@@ -1704,7 +1753,7 @@ float BaseMaterial3D::get_uv1_triplanar_blend_sharpness() const {
 void BaseMaterial3D::set_uv2_scale(const Vector3 &p_scale) {
 
 	uv2_scale = p_scale;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_scale, p_scale);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_scale, p_scale);
 }
 
 Vector3 BaseMaterial3D::get_uv2_scale() const {
@@ -1715,7 +1764,7 @@ Vector3 BaseMaterial3D::get_uv2_scale() const {
 void BaseMaterial3D::set_uv2_offset(const Vector3 &p_offset) {
 
 	uv2_offset = p_offset;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_offset, p_offset);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_offset, p_offset);
 }
 
 Vector3 BaseMaterial3D::get_uv2_offset() const {
@@ -1726,7 +1775,7 @@ Vector3 BaseMaterial3D::get_uv2_offset() const {
 void BaseMaterial3D::set_uv2_triplanar_blend_sharpness(float p_sharpness) {
 
 	uv2_triplanar_sharpness = p_sharpness;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_blend_sharpness, p_sharpness);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_blend_sharpness, p_sharpness);
 }
 
 float BaseMaterial3D::get_uv2_triplanar_blend_sharpness() const {
@@ -1749,7 +1798,7 @@ BaseMaterial3D::BillboardMode BaseMaterial3D::get_billboard_mode() const {
 void BaseMaterial3D::set_particles_anim_h_frames(int p_frames) {
 
 	particles_anim_h_frames = p_frames;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
 }
 
 int BaseMaterial3D::get_particles_anim_h_frames() const {
@@ -1759,7 +1808,7 @@ int BaseMaterial3D::get_particles_anim_h_frames() const {
 void BaseMaterial3D::set_particles_anim_v_frames(int p_frames) {
 
 	particles_anim_v_frames = p_frames;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
 }
 
 int BaseMaterial3D::get_particles_anim_v_frames() const {
@@ -1770,7 +1819,7 @@ int BaseMaterial3D::get_particles_anim_v_frames() const {
 void BaseMaterial3D::set_particles_anim_loop(bool p_loop) {
 
 	particles_anim_loop = p_loop;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
 }
 
 bool BaseMaterial3D::get_particles_anim_loop() const {
@@ -1793,7 +1842,7 @@ bool BaseMaterial3D::is_heightmap_deep_parallax_enabled() const {
 void BaseMaterial3D::set_heightmap_deep_parallax_min_layers(int p_layer) {
 
 	deep_parallax_min_layers = p_layer;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_min_layers, p_layer);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_min_layers, p_layer);
 }
 int BaseMaterial3D::get_heightmap_deep_parallax_min_layers() const {
 
@@ -1803,7 +1852,7 @@ int BaseMaterial3D::get_heightmap_deep_parallax_min_layers() const {
 void BaseMaterial3D::set_heightmap_deep_parallax_max_layers(int p_layer) {
 
 	deep_parallax_max_layers = p_layer;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_max_layers, p_layer);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_max_layers, p_layer);
 }
 int BaseMaterial3D::get_heightmap_deep_parallax_max_layers() const {
 
@@ -1813,7 +1862,7 @@ int BaseMaterial3D::get_heightmap_deep_parallax_max_layers() const {
 void BaseMaterial3D::set_heightmap_deep_parallax_flip_tangent(bool p_flip) {
 
 	heightmap_parallax_flip_tangent = p_flip;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_flip, Vector2(heightmap_parallax_flip_tangent ? -1 : 1, heightmap_parallax_flip_binormal ? -1 : 1));
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_flip, Vector2(heightmap_parallax_flip_tangent ? -1 : 1, heightmap_parallax_flip_binormal ? -1 : 1));
 }
 
 bool BaseMaterial3D::get_heightmap_deep_parallax_flip_tangent() const {
@@ -1824,7 +1873,7 @@ bool BaseMaterial3D::get_heightmap_deep_parallax_flip_tangent() const {
 void BaseMaterial3D::set_heightmap_deep_parallax_flip_binormal(bool p_flip) {
 
 	heightmap_parallax_flip_binormal = p_flip;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_flip, Vector2(heightmap_parallax_flip_tangent ? -1 : 1, heightmap_parallax_flip_binormal ? -1 : 1));
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_flip, Vector2(heightmap_parallax_flip_tangent ? -1 : 1, heightmap_parallax_flip_binormal ? -1 : 1));
 }
 
 bool BaseMaterial3D::get_heightmap_deep_parallax_flip_binormal() const {
@@ -1844,7 +1893,7 @@ bool BaseMaterial3D::is_grow_enabled() const {
 
 void BaseMaterial3D::set_alpha_scissor_threshold(float p_threshold) {
 	alpha_scissor_threshold = p_threshold;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->alpha_scissor_threshold, p_threshold);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->alpha_scissor_threshold, p_threshold);
 }
 
 float BaseMaterial3D::get_alpha_scissor_threshold() const {
@@ -1854,7 +1903,7 @@ float BaseMaterial3D::get_alpha_scissor_threshold() const {
 
 void BaseMaterial3D::set_grow(float p_grow) {
 	grow = p_grow;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->grow, p_grow);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->grow, p_grow);
 }
 
 float BaseMaterial3D::get_grow() const {
@@ -1877,7 +1926,7 @@ static Plane _get_texture_mask(BaseMaterial3D::TextureChannel p_channel) {
 void BaseMaterial3D::set_metallic_texture_channel(TextureChannel p_channel) {
 	ERR_FAIL_INDEX(p_channel, 5);
 	metallic_texture_channel = p_channel;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->metallic_texture_channel, _get_texture_mask(p_channel));
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->metallic_texture_channel, _get_texture_mask(p_channel));
 }
 
 BaseMaterial3D::TextureChannel BaseMaterial3D::get_metallic_texture_channel() const {
@@ -1899,7 +1948,7 @@ void BaseMaterial3D::set_ao_texture_channel(TextureChannel p_channel) {
 
 	ERR_FAIL_INDEX(p_channel, 5);
 	ao_texture_channel = p_channel;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_texture_channel, _get_texture_mask(p_channel));
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->ao_texture_channel, _get_texture_mask(p_channel));
 }
 
 BaseMaterial3D::TextureChannel BaseMaterial3D::get_ao_texture_channel() const {
@@ -1910,7 +1959,7 @@ void BaseMaterial3D::set_refraction_texture_channel(TextureChannel p_channel) {
 
 	ERR_FAIL_INDEX(p_channel, 5);
 	refraction_texture_channel = p_channel;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_texture_channel, _get_texture_mask(p_channel));
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_texture_channel, _get_texture_mask(p_channel));
 }
 
 BaseMaterial3D::TextureChannel BaseMaterial3D::get_refraction_texture_channel() const {
@@ -1978,7 +2027,7 @@ bool BaseMaterial3D::is_proximity_fade_enabled() const {
 void BaseMaterial3D::set_proximity_fade_distance(float p_distance) {
 
 	proximity_fade_distance = p_distance;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_distance, p_distance);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_distance, p_distance);
 }
 float BaseMaterial3D::get_proximity_fade_distance() const {
 
@@ -1999,7 +2048,7 @@ BaseMaterial3D::DistanceFadeMode BaseMaterial3D::get_distance_fade() const {
 void BaseMaterial3D::set_distance_fade_max_distance(float p_distance) {
 
 	distance_fade_max_distance = p_distance;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->distance_fade_max, distance_fade_max_distance);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->distance_fade_max, distance_fade_max_distance);
 }
 float BaseMaterial3D::get_distance_fade_max_distance() const {
 
@@ -2009,7 +2058,7 @@ float BaseMaterial3D::get_distance_fade_max_distance() const {
 void BaseMaterial3D::set_distance_fade_min_distance(float p_distance) {
 
 	distance_fade_min_distance = p_distance;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->distance_fade_min, distance_fade_min_distance);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->distance_fade_min, distance_fade_min_distance);
 }
 
 float BaseMaterial3D::get_distance_fade_min_distance() const {
@@ -2091,8 +2140,20 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subsurface_scattering_strength", "strength"), &BaseMaterial3D::set_subsurface_scattering_strength);
 	ClassDB::bind_method(D_METHOD("get_subsurface_scattering_strength"), &BaseMaterial3D::get_subsurface_scattering_strength);
 
-	ClassDB::bind_method(D_METHOD("set_transmission", "transmission"), &BaseMaterial3D::set_transmission);
-	ClassDB::bind_method(D_METHOD("get_transmission"), &BaseMaterial3D::get_transmission);
+	ClassDB::bind_method(D_METHOD("set_transmittance_color", "color"), &BaseMaterial3D::set_transmittance_color);
+	ClassDB::bind_method(D_METHOD("get_transmittance_color"), &BaseMaterial3D::get_transmittance_color);
+
+	ClassDB::bind_method(D_METHOD("set_transmittance_depth", "depth"), &BaseMaterial3D::set_transmittance_depth);
+	ClassDB::bind_method(D_METHOD("get_transmittance_depth"), &BaseMaterial3D::get_transmittance_depth);
+
+	ClassDB::bind_method(D_METHOD("set_transmittance_curve", "curve"), &BaseMaterial3D::set_transmittance_curve);
+	ClassDB::bind_method(D_METHOD("get_transmittance_curve"), &BaseMaterial3D::get_transmittance_curve);
+
+	ClassDB::bind_method(D_METHOD("set_transmittance_boost", "boost"), &BaseMaterial3D::set_transmittance_boost);
+	ClassDB::bind_method(D_METHOD("get_transmittance_boost"), &BaseMaterial3D::get_transmittance_boost);
+
+	ClassDB::bind_method(D_METHOD("set_backlight", "backlight"), &BaseMaterial3D::set_backlight);
+	ClassDB::bind_method(D_METHOD("get_backlight"), &BaseMaterial3D::get_backlight);
 
 	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &BaseMaterial3D::set_refraction);
 	ClassDB::bind_method(D_METHOD("get_refraction"), &BaseMaterial3D::get_refraction);
@@ -2222,10 +2283,10 @@ void BaseMaterial3D::_bind_methods() {
 
 	ADD_GROUP("Transparency", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transparency", PROPERTY_HINT_ENUM, "Disabled,Alpha,AlphaScissor,DepthPrePass"), "set_transparency", "get_transparency");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
 
 	ADD_GROUP("Shading", "");
@@ -2247,56 +2308,56 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orm_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ORM);
 
 	ADD_GROUP("Metallic", "metallic_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "metallic", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_metallic", "get_metallic");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "metallic_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular", "get_specular");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "metallic", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_metallic", "get_metallic");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "metallic_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular", "get_specular");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "metallic_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_METALLIC);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "metallic_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_metallic_texture_channel", "get_metallic_texture_channel");
 
 	ADD_GROUP("Roughness", "roughness_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_roughness", "get_roughness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_roughness", "get_roughness");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "roughness_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ROUGHNESS);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "roughness_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_roughness_texture_channel", "get_roughness_texture_channel");
 
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_operator", PROPERTY_HINT_ENUM, "Add,Multiply"), "set_emission_operator", "get_emission_operator");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_on_uv2"), "set_flag", "get_flag", FLAG_EMISSION_ON_UV2);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("NormalMap", "normal_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "normal_enabled"), "set_feature", "get_feature", FEATURE_NORMAL_MAPPING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "normal_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_normal_scale", "get_normal_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_normal_scale", "get_normal_scale");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "normal_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_NORMAL);
 
 	ADD_GROUP("Rim", "rim_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "rim_enabled"), "set_feature", "get_feature", FEATURE_RIM);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rim", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_rim", "get_rim");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rim_tint", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_rim_tint", "get_rim_tint");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rim", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_rim", "get_rim");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rim_tint", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_rim_tint", "get_rim_tint");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "rim_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_RIM);
 
 	ADD_GROUP("Clearcoat", "clearcoat_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "clearcoat_enabled"), "set_feature", "get_feature", FEATURE_CLEARCOAT);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "clearcoat", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat", "get_clearcoat");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "clearcoat_gloss", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat_gloss", "get_clearcoat_gloss");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat", "get_clearcoat");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat_gloss", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat_gloss", "get_clearcoat_gloss");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clearcoat_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_CLEARCOAT);
 
 	ADD_GROUP("Anisotropy", "anisotropy_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "anisotropy_enabled"), "set_feature", "get_feature", FEATURE_ANISOTROPY);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "anisotropy", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_anisotropy", "get_anisotropy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anisotropy", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_anisotropy", "get_anisotropy");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anisotropy_flowmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_FLOWMAP);
 
 	ADD_GROUP("Ambient Occlusion", "ao_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled"), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ao_light_affect", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_light_affect", "get_ao_light_affect");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao_light_affect", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_light_affect", "get_ao_light_affect");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_ao_texture_channel", "get_ao_texture_channel");
 
 	ADD_GROUP("Height", "heightmap_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_enabled"), "set_feature", "get_feature", FEATURE_HEIGHT_MAPPING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "heightmap_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_heightmap_scale", "get_heightmap_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "heightmap_scale", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_heightmap_scale", "get_heightmap_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "heightmap_deep_parallax"), "set_heightmap_deep_parallax", "is_heightmap_deep_parallax_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_min_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_heightmap_deep_parallax_min_layers", "get_heightmap_deep_parallax_min_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "heightmap_max_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_heightmap_deep_parallax_max_layers", "get_heightmap_deep_parallax_max_layers");
@@ -2306,18 +2367,27 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "heightmap_flip_texture"), "set_flag", "get_flag", FLAG_INVERT_HEIGHTMAP);
 
 	ADD_GROUP("Subsurf Scatter", "subsurf_scatter_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled"), "set_feature", "get_feature", FEATURE_SUBSURACE_SCATTERING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "subsurf_scatter_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_subsurface_scattering_strength", "get_subsurface_scattering_strength");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_enabled"), "set_feature", "get_feature", FEATURE_SUBSURFACE_SCATTERING);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_subsurface_scattering_strength", "get_subsurface_scattering_strength");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_skin_mode"), "set_flag", "get_flag", FLAG_SUBSURFACE_MODE_SKIN);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_SCATTERING);
 
-	ADD_GROUP("Transmission", "transmission_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transmission_enabled"), "set_feature", "get_feature", FEATURE_TRANSMISSION);
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "transmission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_transmission", "get_transmission");
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "transmission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_TRANSMISSION);
+	ADD_SUBGROUP("Transmittance", "subsurf_scatter_transmittance_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "subsurf_scatter_transmittance_enabled"), "set_feature", "get_feature", FEATURE_SUBSURFACE_TRANSMITTANCE);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "subsurf_scatter_transmittance_color"), "set_transmittance_color", "get_transmittance_color");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "subsurf_scatter_transmittance_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_SUBSURFACE_TRANSMITTANCE);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_depth", PROPERTY_HINT_RANGE, "0.001,8,0.001,or_greater"), "set_transmittance_depth", "get_transmittance_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_curve", PROPERTY_HINT_EXP_EASING, "0.01,16,0.01"), "set_transmittance_curve", "get_transmittance_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "subsurf_scatter_transmittance_boost", PROPERTY_HINT_RANGE, "0.00,1.0,0.01"), "set_transmittance_boost", "get_transmittance_boost");
+
+	ADD_GROUP("Back Lighting", "backlight_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "backlight_enabled"), "set_feature", "get_feature", FEATURE_BACKLIGHT);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "backlight", PROPERTY_HINT_COLOR_NO_ALPHA), "set_backlight", "get_backlight");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "backlight_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_BACKLIGHT);
 
 	ADD_GROUP("Refraction", "refraction_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "refraction_enabled"), "set_feature", "get_feature", FEATURE_REFRACTION);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "refraction_scale", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_refraction", "get_refraction");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "refraction_scale", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_refraction", "get_refraction");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "refraction_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_REFRACTION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "refraction_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_refraction_texture_channel", "get_refraction_texture_channel");
 
@@ -2333,14 +2403,14 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_scale"), "set_uv1_scale", "get_uv1_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_offset"), "set_uv1_offset", "get_uv1_offset");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv1_triplanar"), "set_flag", "get_flag", FLAG_UV1_USE_TRIPLANAR);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv1_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv1_triplanar_blend_sharpness", "get_uv1_triplanar_blend_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv1_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv1_triplanar_blend_sharpness", "get_uv1_triplanar_blend_sharpness");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv1_world_triplanar"), "set_flag", "get_flag", FLAG_UV1_USE_WORLD_TRIPLANAR);
 
 	ADD_GROUP("UV2", "uv2_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_scale"), "set_uv2_scale", "get_uv2_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_offset"), "set_uv2_offset", "get_uv2_offset");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_TRIPLANAR);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv2_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv2_triplanar_blend_sharpness", "get_uv2_triplanar_blend_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv2_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv2_triplanar_blend_sharpness", "get_uv2_triplanar_blend_sharpness");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_world_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_WORLD_TRIPLANAR);
 
 	ADD_GROUP("Sampling", "texture_");
@@ -2362,23 +2432,18 @@ void BaseMaterial3D::_bind_methods() {
 
 	ADD_GROUP("Grow", "grow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "grow"), "set_grow_enabled", "is_grow_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "grow_amount", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_grow", "get_grow");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "grow_amount", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_grow", "get_grow");
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_flag", "get_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_point_size"), "set_flag", "get_flag", FLAG_USE_POINT_SIZE);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
-
-	BIND_ENUM_CONSTANT(TRANSPARENCY_DISABLED);
-	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA);
-	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA_SCISSOR);
-	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
@@ -2391,15 +2456,36 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(TEXTURE_HEIGHTMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_SCATTERING);
-	BIND_ENUM_CONSTANT(TEXTURE_TRANSMISSION);
+	BIND_ENUM_CONSTANT(TEXTURE_SUBSURFACE_TRANSMITTANCE);
+	BIND_ENUM_CONSTANT(TEXTURE_BACKLIGHT);
 	BIND_ENUM_CONSTANT(TEXTURE_REFRACTION);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_MASK);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_NORMAL);
+	BIND_ENUM_CONSTANT(TEXTURE_ORM);
 	BIND_ENUM_CONSTANT(TEXTURE_MAX);
+
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_MAX);
 
 	BIND_ENUM_CONSTANT(DETAIL_UV_1);
 	BIND_ENUM_CONSTANT(DETAIL_UV_2);
+
+	BIND_ENUM_CONSTANT(TRANSPARENCY_DISABLED);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA_SCISSOR);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
+	BIND_ENUM_CONSTANT(TRANSPARENCY_MAX);
+
+	BIND_ENUM_CONSTANT(SHADING_MODE_UNSHADED);
+	BIND_ENUM_CONSTANT(SHADING_MODE_PER_PIXEL);
+	BIND_ENUM_CONSTANT(SHADING_MODE_PER_VERTEX);
+	BIND_ENUM_CONSTANT(SHADING_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(FEATURE_EMISSION);
 	BIND_ENUM_CONSTANT(FEATURE_NORMAL_MAPPING);
@@ -2408,8 +2494,9 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_ANISOTROPY);
 	BIND_ENUM_CONSTANT(FEATURE_AMBIENT_OCCLUSION);
 	BIND_ENUM_CONSTANT(FEATURE_HEIGHT_MAPPING);
-	BIND_ENUM_CONSTANT(FEATURE_SUBSURACE_SCATTERING);
-	BIND_ENUM_CONSTANT(FEATURE_TRANSMISSION);
+	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_SCATTERING);
+	BIND_ENUM_CONSTANT(FEATURE_SUBSURFACE_TRANSMITTANCE);
+	BIND_ENUM_CONSTANT(FEATURE_BACKLIGHT);
 	BIND_ENUM_CONSTANT(FEATURE_REFRACTION);
 	BIND_ENUM_CONSTANT(FEATURE_DETAIL);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
@@ -2444,6 +2531,8 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_AMBIENT_LIGHT);
 	BIND_ENUM_CONSTANT(FLAG_USE_SHADOW_TO_OPACITY);
 	BIND_ENUM_CONSTANT(FLAG_USE_TEXTURE_REPEAT);
+	BIND_ENUM_CONSTANT(FLAG_INVERT_HEIGHTMAP);
+	BIND_ENUM_CONSTANT(FLAG_SUBSURFACE_MODE_SKIN);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
@@ -2499,7 +2588,11 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_anisotropy(0);
 	set_heightmap_scale(0.05);
 	set_subsurface_scattering_strength(0);
-	set_transmission(Color(0, 0, 0));
+	set_backlight(Color(0, 0, 0));
+	set_transmittance_color(Color(1, 1, 1, 1));
+	set_transmittance_depth(0.1);
+	set_transmittance_curve(1.0);
+	set_transmittance_boost(0.0);
 	set_refraction(0.05);
 	set_point_size(1);
 	set_uv1_offset(Vector3(0, 0, 0));
@@ -2555,7 +2648,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 		features[i] = false;
 	}
 
-	current_key.key = 0;
+	current_key.key0 = 0;
+	current_key.key1 = 0;
 	current_key.invalid_key = 1;
 	texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 	_queue_shader_change();
@@ -2563,27 +2657,24 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 BaseMaterial3D::~BaseMaterial3D() {
 
-	if (material_mutex)
-		material_mutex->lock();
+	MutexLock lock(material_mutex);
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
 		if (shader_map[current_key].users == 0) {
 			//deallocate shader, as it's no longer in use
-			VS::get_singleton()->free(shader_map[current_key].shader);
+			RS::get_singleton()->free(shader_map[current_key].shader);
 			shader_map.erase(current_key);
 		}
 
-		VS::get_singleton()->material_set_shader(_get_material(), RID());
+		RS::get_singleton()->material_set_shader(_get_material(), RID());
 	}
-
-	if (material_mutex)
-		material_mutex->unlock();
 }
 
 //////////////////////
-#ifndef DISABLE_DEPRECATED
 
+#ifndef DISABLE_DEPRECATED
+// Kept for compatibility from 3.x to 4.0.
 bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "flags_transparent") {
 		bool transparent = p_value;
@@ -2652,7 +2743,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "depth_flip_binormal", "heightmap_flip_binormal" },
 			{ "depth_texture", "heightmap_texture" },
 
-			{ NULL, NULL },
+			{ nullptr, nullptr },
 		};
 
 		int idx = 0;
@@ -2670,5 +2761,4 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 
 	return false;
 }
-
-#endif
+#endif // DISABLE_DEPRECATED

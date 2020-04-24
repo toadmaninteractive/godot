@@ -30,10 +30,11 @@
 
 #include "touch_screen_button.h"
 
-#include "core/input_map.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
+#include "core/input/input_map.h"
 #include "core/os/os.h"
-
+#include "scene/main/window.h"
+#
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
@@ -69,12 +70,12 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 
 	if (shape.is_valid())
-		shape->disconnect("changed", this, "update");
+		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 
 	shape = p_shape;
 
 	if (shape.is_valid())
-		shape->connect("changed", this, "update");
+		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 
 	update();
 }
@@ -114,7 +115,7 @@ void TouchScreenButton::_notification(int p_what) {
 
 			if (!is_inside_tree())
 				return;
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 
 			if (finger_pressed != -1) {
@@ -145,7 +146,7 @@ void TouchScreenButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 			update();
 
@@ -289,12 +290,12 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 
 	if (action != StringName()) {
 
-		Input::get_singleton()->action_press(action);
+		InputFilter::get_singleton()->action_press(action);
 		Ref<InputEventAction> iea;
 		iea.instance();
 		iea->set_action(action);
 		iea->set_pressed(true);
-		get_tree()->input_event(iea);
+		get_viewport()->input(iea, true);
 	}
 
 	emit_signal("pressed");
@@ -307,14 +308,14 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 
 	if (action != StringName()) {
 
-		Input::get_singleton()->action_release(action);
+		InputFilter::get_singleton()->action_release(action);
 		if (!p_exiting_tree) {
 
 			Ref<InputEventAction> iea;
 			iea.instance();
 			iea->set_action(action);
 			iea->set_pressed(false);
-			get_tree()->input_event(iea);
+			get_viewport()->input(iea, true);
 		}
 	}
 
@@ -404,7 +405,7 @@ void TouchScreenButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_centered"), "set_shape_centered", "is_shape_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_visible"), "set_shape_visible", "is_shape_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "passby_press"), "set_passby_press", "is_passby_press_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,TouchScreen Only"), "set_visibility_mode", "get_visibility_mode");
 
 	ADD_SIGNAL(MethodInfo("pressed"));

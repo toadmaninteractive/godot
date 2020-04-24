@@ -34,7 +34,7 @@
 #include "core/resource.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class Environment : public Resource {
 
@@ -125,7 +125,6 @@ private:
 	float ssr_fade_in;
 	float ssr_fade_out;
 	float ssr_depth_tolerance;
-	bool ssr_roughness;
 
 	bool ssao_enabled;
 	float ssao_radius;
@@ -146,7 +145,6 @@ private:
 	float glow_hdr_bleed_threshold;
 	float glow_hdr_bleed_scale;
 	float glow_hdr_luminance_cap;
-	bool glow_bicubic_upscale;
 
 	bool fog_enabled;
 	Color fog_color;
@@ -170,6 +168,7 @@ protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
 #ifndef DISABLE_DEPRECATED
+	// Kept for compatibility from 3.x to 4.0.
 	bool _set(const StringName &p_name, const Variant &p_value);
 #endif
 
@@ -257,9 +256,6 @@ public:
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
 	float get_ssr_depth_tolerance() const;
 
-	void set_ssr_rough(bool p_enable);
-	bool is_ssr_rough() const;
-
 	void set_ssao_enabled(bool p_enable);
 	bool is_ssao_enabled() const;
 
@@ -316,9 +312,6 @@ public:
 
 	void set_glow_hdr_bleed_scale(float p_scale);
 	float get_glow_hdr_bleed_scale() const;
-
-	void set_glow_bicubic_upscale(bool p_enable);
-	bool is_glow_bicubic_upscale_enabled() const;
 
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;

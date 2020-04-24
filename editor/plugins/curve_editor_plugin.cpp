@@ -32,7 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/core_string_names.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 
@@ -49,7 +49,7 @@ CurveEditor::CurveEditor() {
 	set_clip_contents(true);
 
 	_context_menu = memnew(PopupMenu);
-	_context_menu->connect("id_pressed", this, "_on_context_menu_item_selected");
+	_context_menu->connect("id_pressed", callable_mp(this, &CurveEditor::on_context_menu_item_selected));
 	add_child(_context_menu);
 
 	_presets_menu = memnew(PopupMenu);
@@ -60,7 +60,7 @@ CurveEditor::CurveEditor() {
 	_presets_menu->add_item(TTR("Ease In"), PRESET_EASE_IN);
 	_presets_menu->add_item(TTR("Ease Out"), PRESET_EASE_OUT);
 	_presets_menu->add_item(TTR("Smoothstep"), PRESET_SMOOTHSTEP);
-	_presets_menu->connect("id_pressed", this, "_on_preset_item_selected");
+	_presets_menu->connect("id_pressed", callable_mp(this, &CurveEditor::on_preset_item_selected));
 	_context_menu->add_child(_presets_menu);
 }
 
@@ -70,15 +70,15 @@ void CurveEditor::set_curve(Ref<Curve> curve) {
 		return;
 
 	if (_curve_ref.is_valid()) {
-		_curve_ref->disconnect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
-		_curve_ref->disconnect(Curve::SIGNAL_RANGE_CHANGED, this, "_curve_changed");
+		_curve_ref->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEditor::_curve_changed));
+		_curve_ref->disconnect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEditor::_curve_changed));
 	}
 
 	_curve_ref = curve;
 
 	if (_curve_ref.is_valid()) {
-		_curve_ref->connect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
-		_curve_ref->connect(Curve::SIGNAL_RANGE_CHANGED, this, "_curve_changed");
+		_curve_ref->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEditor::_curve_changed));
+		_curve_ref->connect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEditor::_curve_changed));
 	}
 
 	_selected_point = -1;
@@ -210,7 +210,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					else
 						tangent = 9999 * (dir.y >= 0 ? 1 : -1);
 
-					bool link = !Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+					bool link = !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
 
 					if (_selected_tangent == TANGENT_LEFT) {
 						curve.set_point_left_tangent(_selected_point, tangent);
@@ -238,7 +238,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		const InputEventKey &key = **key_ref;
 
 		if (key.is_pressed() && _selected_point != -1) {
-			if (key.get_scancode() == KEY_DELETE)
+			if (key.get_keycode() == KEY_DELETE)
 				remove_point(_selected_point);
 		}
 	}
@@ -511,7 +511,7 @@ void CurveEditor::set_hover_point_index(int index) {
 }
 
 void CurveEditor::update_view_transform() {
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	const real_t margin = font->get_height() + 2 * EDSCALE;
 
 	float min_y = 0;
@@ -626,7 +626,7 @@ void CurveEditor::_draw() {
 	// Background
 
 	Vector2 view_size = get_rect().size;
-	draw_style_box(get_stylebox("bg", "Tree"), Rect2(Point2(), view_size));
+	draw_style_box(get_theme_stylebox("bg", "Tree"), Rect2(Point2(), view_size));
 
 	// Grid
 
@@ -635,8 +635,8 @@ void CurveEditor::_draw() {
 	Vector2 min_edge = get_world_pos(Vector2(0, view_size.y));
 	Vector2 max_edge = get_world_pos(Vector2(view_size.x, 0));
 
-	const Color grid_color0 = get_color("mono_color", "Editor") * Color(1, 1, 1, 0.15);
-	const Color grid_color1 = get_color("mono_color", "Editor") * Color(1, 1, 1, 0.07);
+	const Color grid_color0 = get_theme_color("mono_color", "Editor") * Color(1, 1, 1, 0.15);
+	const Color grid_color1 = get_theme_color("mono_color", "Editor") * Color(1, 1, 1, 0.07);
 	draw_line(Vector2(min_edge.x, curve.get_min_value()), Vector2(max_edge.x, curve.get_min_value()), grid_color0);
 	draw_line(Vector2(max_edge.x, curve.get_max_value()), Vector2(min_edge.x, curve.get_max_value()), grid_color0);
 	draw_line(Vector2(0, min_edge.y), Vector2(0, max_edge.y), grid_color0);
@@ -656,9 +656,9 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(Transform2D());
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	float font_height = font->get_height();
-	Color text_color = get_color("font_color", "Editor");
+	Color text_color = get_theme_color("font_color", "Editor");
 
 	{
 		// X axis
@@ -686,7 +686,7 @@ void CurveEditor::_draw() {
 
 	if (_selected_point >= 0) {
 
-		const Color tangent_color = get_color("accent_color", "Editor");
+		const Color tangent_color = get_theme_color("accent_color", "Editor");
 
 		int i = _selected_point;
 		Vector2 pos = curve.get_point_position(i);
@@ -708,8 +708,8 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(_world_to_view);
 
-	const Color line_color = get_color("font_color", "Editor");
-	const Color edge_line_color = get_color("highlight_color", "Editor");
+	const Color line_color = get_theme_color("font_color", "Editor");
+	const Color edge_line_color = get_theme_color("highlight_color", "Editor");
 
 	CanvasItemPlotCurve plot_func(*this, line_color, edge_line_color);
 	plot_curve_accurate(curve, 4.f / view_size.x, plot_func);
@@ -718,8 +718,8 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(Transform2D());
 
-	const Color point_color = get_color("font_color", "Editor");
-	const Color selected_point_color = get_color("accent_color", "Editor");
+	const Color point_color = get_theme_color("font_color", "Editor");
+	const Color selected_point_color = get_theme_color("accent_color", "Editor");
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
 		Vector2 pos = curve.get_point_position(i);
@@ -749,16 +749,13 @@ void CurveEditor::_draw() {
 
 void CurveEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &CurveEditor::on_gui_input);
-	ClassDB::bind_method(D_METHOD("_on_preset_item_selected"), &CurveEditor::on_preset_item_selected);
-	ClassDB::bind_method(D_METHOD("_curve_changed"), &CurveEditor::_curve_changed);
-	ClassDB::bind_method(D_METHOD("_on_context_menu_item_selected"), &CurveEditor::on_context_menu_item_selected);
 }
 
 //---------------
 
 bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
 
-	return Object::cast_to<Curve>(p_object) != NULL;
+	return Object::cast_to<Curve>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
@@ -802,8 +799,6 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 
 	im.create(thumbnail_size, thumbnail_size / 2, 0, Image::FORMAT_RGBA8);
 
-	im.lock();
-
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
 	for (int i = 0; i < thumbnail_size; i++) {
 		for (int j = 0; j < thumbnail_size / 2; j++) {
@@ -843,8 +838,6 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 
 		prev_y = y;
 	}
-
-	im.unlock();
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 
