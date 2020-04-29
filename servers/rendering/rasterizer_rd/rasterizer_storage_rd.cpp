@@ -6027,8 +6027,3 @@ RasterizerStorageRD::~RasterizerStorageRD() {
 		RD::get_singleton()->free(decal_atlas.texture);
 	}
 }
-
-void RasterizerStorageRD::get_shaders(Vector<ShaderRD*>& shaders) {
-	get_effects()->get_shaders(shaders);
-	shaders.push_back(&giprobe_sdf_shader);
-}

@@ -7,10 +7,10 @@
 
 #include "editor/editor_file_system.h"
 
-#include "servers/visual/rasterizer_rd/rasterizer_canvas_rd.h"
-#include "servers/visual/rasterizer_rd/rasterizer_scene_high_end_rd.h"
-#include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
-#include "servers/visual/visual_server_globals.h"
+#include "servers/rendering/rasterizer_rd/rasterizer_canvas_rd.h"
+#include "servers/rendering/rasterizer_rd/rasterizer_scene_high_end_rd.h"
+#include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
@@ -22,6 +22,10 @@
 #include <spirv_hlsl.hpp>
 
 #include <regex>
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define sprintf sprintf_s
+#endif
 
 struct CompilationConfiguration {
 	bool unroll;
@@ -40,10 +44,10 @@ struct PsslCompileResult {
 	std::string sdb;
 };
 
-std::string spirv_to_hlsl(const PoolVector<uint8_t> &spirv);
+std::string spirv_to_hlsl(const Vector<uint8_t> &spirv);
 std::string hlsl_to_pssl(const std::string &hlsl, CompilationConfiguration &config);
 PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfiguration &config);
-std::string build_metadata(const PoolVector<uint8_t> &spirv, const std::string &pssl_bytecode);
+std::string build_metadata(const Vector<uint8_t> &spirv, const std::string &pssl_bytecode);
 Error erase_files_recursive(DirAccess *da, Vector<String> &exclude_pattern);
 
 bool potential_shader(const StringName file_type) {
@@ -190,7 +194,7 @@ void ShaderExporter::export_shaders() {
 			uint32_t output_target_count = 0;
 			{
 				SpvReflectShaderModule module;
-				SpvReflectResult result = spvReflectCreateShaderModule(entry.program.size(), entry.program.read().ptr(), &module);
+				SpvReflectResult result = spvReflectCreateShaderModule(entry.program.size(), entry.program.ptr(), &module);
 				ERR_FAIL_COND(result != SPV_REFLECT_RESULT_SUCCESS);
 				Vector<SpvReflectInterfaceVariable *> output_variables;
 				spvReflectEnumerateOutputVariables(&module, &output_target_count, NULL);
@@ -363,8 +367,8 @@ void ShaderExporter::export_shaders() {
 	memdelete(da);
 }
 
-std::string spirv_to_hlsl(const PoolVector<uint8_t> &spirv) {
-	uint32_t *spirv_data = (uint32_t *)spirv.read().ptr();
+std::string spirv_to_hlsl(const Vector<uint8_t> &spirv) {
+	uint32_t *spirv_data = (uint32_t *)spirv.ptr();
 	uint32_t spirv_size = spirv.size() / sizeof(uint32_t);
 
 	spirv_cross::CompilerHLSL hlsl(spirv_data, spirv_size);
@@ -521,7 +525,7 @@ PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfigu
 	return res;
 }
 
-std::string build_metadata(const PoolVector<uint8_t> &spirv, const std::string &pssl_bytecode) {
+std::string build_metadata(const Vector<uint8_t> &spirv, const std::string &pssl_bytecode) {
 	struct SpirvReflection {
 		SpvReflectShaderModule module;
 		Vector<SpvReflectDescriptorBinding *> descriptor_bindings;
@@ -548,7 +552,7 @@ std::string build_metadata(const PoolVector<uint8_t> &spirv, const std::string &
 	{
 		spirv_reflection.push_constant = nullptr;
 
-		SpvReflectResult result = spvReflectCreateShaderModule(spirv.size(), spirv.read().ptr(), &spirv_reflection.module);
+		SpvReflectResult result = spvReflectCreateShaderModule(spirv.size(), spirv.ptr(), &spirv_reflection.module);
 		ERR_FAIL_COND_V(result != SPV_REFLECT_RESULT_SUCCESS, "");
 
 		uint32_t descriptor_bindings_count = 0;

@@ -2991,10 +2991,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 	gi_probe->last_probe_version = storage->gi_probe_get_version(gi_probe->probe);
 }
 
- void RasterizerSceneRD::get_shaders(Vector<ShaderRD*>& shaders) {
-	 shaders.push_back(&giprobe_shader);
- }
-
 void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rendering_device.h"
+#include "core/crypto/crypto_core.h"
 #include "core/method_bind_ext.gen.inc"
 #include "rendering_device_binds.h"
 
@@ -58,7 +59,30 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 
 	ERR_FAIL_COND_V(!compile_function, Vector<uint8_t>());
 
+#ifdef PS4_EDITOR_TOOLS
+	Vector<uint8_t> data = compile_function(p_stage, p_source_code, p_language, r_error);
+	if (data.size() == 0)
+		return data;
+
+	// Cache the data so that we can fetch it
+
+	ShaderCompileCacheEntry entry;
+	entry.program = data;
+	entry.source_code = p_source_code;
+	entry.stage = p_stage;
+
+	unsigned char hash[16];
+	CharString cs = p_source_code.utf8();
+	CryptoCore::md5((uint8_t *)cs.ptr(), cs.size(), hash);
+	{
+		MutexLock locker(shader_compile_cache_lock);
+		shader_compile_cache.insert(String::md5(hash), entry);
+	}
+
+	return data;
+#else
 	return compile_function(p_stage, p_source_code, p_language, r_error);
+#endif
 }
 
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {

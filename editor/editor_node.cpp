@@ -6252,11 +6252,11 @@ EditorNode::EditorNode() {
 	ps4_menu->set_flat(false);
 	ps4_menu->set_switch_on_hover(true);
 	ps4_menu->set_text(TTR("PS4"));
-	ps4_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+	ps4_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(ps4_menu);
 
 	p = ps4_menu->get_popup();
-	p->connect("id_pressed", this, "_ps4_menu_option");
+	p->connect("id_pressed", callable_mp(this, &EditorNode::_ps4_menu_option));
 	p->add_item(TTR("Compile Shaders"), 0);
 
 #endif // PS4_EDITOR_TOOLS

@@ -76,12 +76,12 @@ public:
 
 #ifdef PS4_EDITOR_TOOLS
 	struct ShaderCompileCacheEntry {
-		PoolVector<uint8_t> program;
+		Vector<uint8_t> program;
 		String source_code;
 		int stage;
 	};
 
-	ThreadSafe shader_compile_cache_lock;
+	Mutex shader_compile_cache_lock;
 	Map<String, ShaderCompileCacheEntry> shader_compile_cache;
 #endif // PS4_EDITOR_TOOLS
 

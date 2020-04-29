@@ -2586,8 +2586,3 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 
 	//pipelines don't need freeing, they are all gone after shaders are gone
 }
-
-void RasterizerCanvasRD::get_shaders(Vector<ShaderRD*>& shaders) {
-	shaders.push_back(&shader.canvas_shader);
-	shaders.push_back(&shadow_render.shader);
-}

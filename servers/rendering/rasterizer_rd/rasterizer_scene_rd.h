@@ -101,8 +101,6 @@ protected:
 	void _update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
 	void _draw_sky(bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
 
-	virtual void get_shaders(Vector<ShaderRD*>& shaders);
-
 private:
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	double time_step = 0;

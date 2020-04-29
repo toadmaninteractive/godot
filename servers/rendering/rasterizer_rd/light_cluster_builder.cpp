@@ -173,7 +173,7 @@ void LightClusterBuilder::bake_cluster() {
 		cell.item_pointers[id.item_type] = pointer | ((counter + 1) << COUNTER_SHIFT);
 	}
 
-	RD::get_singleton()->buffer_update(cluster_buffer, 0, cluster_data.size(), cluster_data.read().ptr(), true);
+	RD::get_singleton()->texture_update(cluster_texture, 0, cluster_data, true);
 	RD::get_singleton()->buffer_update(items_buffer, 0, offset * sizeof(uint32_t), ids_ptr, true);
 }
 
@@ -182,8 +182,8 @@ void LightClusterBuilder::setup(uint32_t p_width, uint32_t p_height, uint32_t p_
 	if (width == p_width && height == p_height && depth == p_depth) {
 		return;
 	}
-	if (cluster_buffer.is_valid()) {
-		RD::get_singleton()->free(cluster_buffer);
+	if (cluster_texture.is_valid()) {
+		RD::get_singleton()->free(cluster_texture);
 	}
 
 	width = p_width;
@@ -193,20 +193,20 @@ void LightClusterBuilder::setup(uint32_t p_width, uint32_t p_height, uint32_t p_
 	cluster_data.resize(width * height * depth * sizeof(Cell));
 
 	{
-		//RD::TextureFormat tf;
-		//tf.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
-		//tf.type = RD::TEXTURE_TYPE_3D;
-		//tf.width = width;
-		//tf.height = height;
-		//tf.depth = depth;
-		//tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+		tf.type = RD::TEXTURE_TYPE_3D;
+		tf.width = width;
+		tf.height = height;
+		tf.depth = depth;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 
-		cluster_buffer = RD::get_singleton()->storage_buffer_create(cluster_data.size());
+		cluster_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
 }
 
-RID LightClusterBuilder::get_cluster_buffer() const {
-	return cluster_buffer;
+RID LightClusterBuilder::get_cluster_texture() const {
+	return cluster_texture;
 }
 RID LightClusterBuilder::get_cluster_indices_buffer() const {
 	return items_buffer;
@@ -234,7 +234,7 @@ LightClusterBuilder::LightClusterBuilder() {
 LightClusterBuilder::~LightClusterBuilder() {
 
 	if (cluster_data.size()) {
-		RD::get_singleton()->free(cluster_buffer);
+		RD::get_singleton()->free(cluster_texture);
 	}
 
 	if (lights) {

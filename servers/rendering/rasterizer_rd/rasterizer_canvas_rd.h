@@ -493,8 +493,6 @@ public:
 
 	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
 
-	void get_shaders(Vector<ShaderRD*>& shaders);
-
 	void set_time(double p_time);
 	void update();
 	bool free(RID p_rid);

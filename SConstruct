@@ -58,14 +58,13 @@ custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-# TOADMAN: Modified if-statement in order to set the custom_tools for PS4
 if os.name == "nt" and (platform_arg == "android" or ARGUMENTS.get("use_mingw", False)):
     custom_tools = ["mingw"]
-elif os.name == "nt" and platform_arg == "ps4":
-    custom_tools = ['clang', 'clangxx', 'ar', 'link', 'textfile', 'zip', 'msvs']
 elif platform_arg == 'javascript':
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
+elif platform_arg == "ps4":
+    custom_tools = ["clang", "clangxx", "ar", "link", "textfile", "zip", "msvs"]
 
 env_base = Environment(tools=custom_tools)
 if "TERM" in os.environ:
@@ -342,7 +341,6 @@ if selected_platform in platform_list:
     # C++17 is required as we need guaranteed copy elision as per GH-36436.
     # Prepending to make it possible to override.
     # This needs to come after `configure`, otherwise we don't have env.msvc.
-    # TOADMAN: Changed from c++11 to c++14 (needed by ps4 stdlib impl)
     if not env.msvc:
         # Specifying GNU extensions support explicitly, which are supported by
         # both GCC and Clang. Both currently default to gnu11 and gnu++14.
