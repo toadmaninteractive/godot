@@ -379,7 +379,14 @@ std::string spirv_to_hlsl(const Vector<uint8_t> &spirv) {
 	opts.point_coord_compat = true;
 	hlsl.set_hlsl_options(opts);
 
-	return hlsl.compile();
+	std::string result;
+	try {
+		result = hlsl.compile();
+	} catch (std::exception &e) {
+		printf("SPIRV-Cross HLSL Compiler:\n");
+		printf("\t[E] %s\n", e.what());
+	}
+	return result;
 }
 
 #define SHADER_REPLACE(from, to) output = std::regex_replace(output, std::regex(from), to)
@@ -402,6 +409,7 @@ std::string hlsl_to_pssl(const std::string &hlsl, CompilationConfiguration &conf
 	SHADER_REPLACE("SampleLevel", "SampleLOD");
 	SHADER_REPLACE("Buffer<", "RegularBuffer<"); // '<' is a hack since it would modify ConstantBuffer
 	SHADER_REPLACE("RWByteAddressBuffer", "RW_ByteBuffer");
+	SHADER_REPLACE("ByteAddressBuffer", "ByteBuffer");
 	SHADER_REPLACE("TextureCubeArray", "TextureCube_Array");
 	SHADER_REPLACE("nointerpolation", "nointerp");
 	SHADER_REPLACE("numthreads", "NUM_THREADS");
@@ -497,7 +505,7 @@ PsslCompileResult compile_pssl(const std::string &pssl, const CompilationConfigu
 	const sce::Shader::Wave::Psslc::Output *output = sce::Shader::Wave::Psslc::run(&options, &callbacks);
 
 	if (output->diagnosticCount > 0) {
-		printf("Errors in shader\n");
+		printf("PSSL Compiler:\n");
 
 		for (int i = 0; i < output->diagnosticCount; ++i) {
 			if (output->diagnostics[i].level == 0) {
