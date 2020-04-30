@@ -13,6 +13,9 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 proj;
 	vec4 position_multiplier;
 	float time;
+	float pad0;
+	float pad1;
+	float pad2;	
 }
 params;
 
@@ -40,6 +43,9 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 proj;
 	vec4 position_multiplier;
 	float time; //TODO consider adding vec2 screen res, and float radiance size
+	float pad0;
+	float pad1;
+	float pad2;
 }
 params;
 

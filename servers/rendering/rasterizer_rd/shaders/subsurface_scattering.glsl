@@ -104,7 +104,9 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float scale;
 
 	float depth_scale;
-	uint pad[3];
+	uint pad0;
+	uint pad1;
+	uint pad2;
 }
 params;
 

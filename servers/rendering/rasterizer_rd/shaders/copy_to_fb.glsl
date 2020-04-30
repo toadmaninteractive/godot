@@ -15,7 +15,9 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool use_section;
 
 	bool force_luminance;
-	uint pad[3];
+	uint pad0;
+	uint pad1;
+	uint pad2;
 }
 params;
 
@@ -51,7 +53,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 
 	bool force_luminance;
 	bool alpha_to_zero;
-	uint pad[2];
+	uint pad0;
+	uint pad1;
 } params;
 
 

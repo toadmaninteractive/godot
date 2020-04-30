@@ -3,7 +3,9 @@
 
 layout(push_constant, binding = 0, std430) uniform DrawCall {
 	uint instance_index;
-	uint pad[3]; //16 bits minimum size
+	uint pad0; //16 bits minimum size
+	uint pad1; //16 bits minimum size
+	uint pad2; //16 bits minimum size
 }
 draw_call;
 
@@ -161,7 +163,8 @@ struct LightData { //this structure needs to be as packed as possible
 	float soft_shadow_size; // for spot, it's the size in uv coordinates of the light, for omni it's the span angle
 	float soft_shadow_scale; // scales the shadow kernel for blurrier shadows
 	uint mask;
-	uint pad[2];
+	uint pad0;
+	uint pad1;
 	vec4 projector_rect; //projector rect in srgb decal atlas
 };
 
