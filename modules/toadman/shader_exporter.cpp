@@ -163,6 +163,11 @@ void ShaderExporter::export_shaders() {
 			}
 		}
 
+		if (hlsl_source.size() == 0 || pssl_source.size() == 0) {
+			node = node->next();
+			continue;
+		}
+
 		Vector<PsslCompileResult> pssl_compile_results;
 
 		if (config.stage == RD::ShaderStage::SHADER_STAGE_FRAGMENT) {
