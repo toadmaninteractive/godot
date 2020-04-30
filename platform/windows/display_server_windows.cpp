@@ -2911,8 +2911,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(VULKAN_ENABLED)
 
 	if (rendering_driver == "vulkan") {
-
+#if defined(PS4_EDITOR_TOOLS)
+		rendering_device_vulkan = memnew(RenderingDeviceWinGNM);
+#else
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+#endif
 		rendering_device_vulkan->initialize(context_vulkan);
 
 		RasterizerRD::make_current();

@@ -56,7 +56,11 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
+#if defined(PS4_EDITOR_TOOLS)
+#include "modules/toadman/rendering_device_win_gnm.h"
+#else
 #include "drivers/vulkan/rendering_device_vulkan.h"
+#endif
 #include "platform/windows/vulkan_context_win.h"
 #endif
 

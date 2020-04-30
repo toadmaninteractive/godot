@@ -1,11 +1,5 @@
 #include "rendering_device_win_gnm.h"
 
-RenderingDeviceWinGNM::RenderingDeviceWinGNM() {
-}
-
-RenderingDeviceWinGNM::~RenderingDeviceWinGNM() {
-}
-
 int RenderingDeviceWinGNM::limit_get(Limit p_limit) {
 	switch (p_limit) {
 		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE:
@@ -19,4 +13,10 @@ int RenderingDeviceWinGNM::limit_get(Limit p_limit) {
 		default:
 			ERR_FAIL_V(0);
 	}
+}
+
+RenderingDevice *RenderingDeviceWinGNM::create_local_device() {
+	RenderingDeviceWinGNM *rd = memnew(RenderingDeviceWinGNM);
+	rd->initialize(context, true);
+	return rd;
 }

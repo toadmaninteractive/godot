@@ -965,8 +965,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	VmaAllocator allocator;
 
-	VulkanContext *context;
-
 	void _free_internal(RID p_id);
 	void _flush(bool p_current_frame);
 
@@ -977,6 +975,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	void _finalize_command_bufers();
 	void _begin_frame();
+
+protected:
+	VulkanContext *context;
 
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
