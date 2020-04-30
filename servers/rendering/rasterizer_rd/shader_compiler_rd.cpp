@@ -480,19 +480,50 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
+			/*
+				Generated code isn't determinstic due to how Map is implemented.
+				Toadman is using the generated code to make an unique id to the shader.
+				
+				As of now, it seems ShaderNode::Uniform is the main problem for this behavior.
+				However there might be more issues that we aren't seeing. ShaderNode::Varying for example.
+
+				ShaderNode::Uniform knows its order in relation to other uniforms.
+				Move ShaderNode::Uniform's out of the map an into a sorted vector.
+				That way, code will be generated in the same order each time.
+			*/
+
+			struct UniformEntry {
+				StringName name;
+				SL::ShaderNode::Uniform uniform;
+			};
+
+			struct UniformEntrySort {
+				_FORCE_INLINE_ bool operator()(const UniformEntry &p_l, const UniformEntry &p_r) const {
+					if (SL::is_sampler_type(p_l.uniform.type) && SL::is_sampler_type(p_r.uniform.type))
+						return p_l.uniform.texture_order < p_r.uniform.texture_order;
+					else if (!SL::is_sampler_type(p_l.uniform.type) && SL::is_sampler_type(p_r.uniform.type))
+						return true;
+					else if (SL::is_sampler_type(p_l.uniform.type) && !SL::is_sampler_type(p_r.uniform.type))
+						return false;
+
+					return p_l.uniform.order < p_r.uniform.order;
+				}
+			};
+
+			Vector<UniformEntry> uniform_entries;
+
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
 
 				if (SL::is_sampler_type(E->get().type)) {
 					max_texture_uniforms++;
-				} else {
-
-					if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
-						continue; //instances are indexed directly, dont need index uniforms
-					}
-
+				} else if (E->get().scope != SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
 					max_uniforms++;
-				}
+				} //instances are indexed directly, dont need index uniforms
+				UniformEntry entry = { E->key(), E->get() };
+				uniform_entries.push_back(entry);
 			}
+
+			uniform_entries.sort_custom<UniformEntrySort>();
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
 
@@ -504,65 +535,66 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			uniform_defines.resize(max_uniforms);
 			bool uses_uniforms = false;
 
-			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
+			for (int i = 0; i < uniform_entries.size(); ++i) {
+				const UniformEntry &entry = uniform_entries[i];
 
 				String ucode;
 
-				if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
+				if (entry.uniform.scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
 					//insert, but don't generate any code.
-					p_actions.uniforms->insert(E->key(), E->get());
+					p_actions.uniforms->insert(entry.name, entry.uniform);
 					continue; //instances are indexed directly, dont need index uniforms
 				}
-				if (SL::is_sampler_type(E->get().type)) {
-					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + E->get().texture_order) + ") uniform ";
+				if (SL::is_sampler_type(entry.uniform.type)) {
+					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + entry.uniform.texture_order) + ") uniform ";
 				}
 
-				bool is_buffer_global = !SL::is_sampler_type(E->get().type) && E->get().scope == SL::ShaderNode::Uniform::SCOPE_GLOBAL;
+				bool is_buffer_global = !SL::is_sampler_type(entry.uniform.type) && entry.uniform.scope == SL::ShaderNode::Uniform::SCOPE_GLOBAL;
 
 				if (is_buffer_global) {
 					//this is an integer to index the global table
 					ucode += _typestr(ShaderLanguage::TYPE_UINT);
 				} else {
-					ucode += _prestr(E->get().precision);
-					ucode += _typestr(E->get().type);
+					ucode += _prestr(entry.uniform.precision);
+					ucode += _typestr(entry.uniform.type);
 				}
 
-				ucode += " " + _mkid(E->key());
+				ucode += " " + _mkid(entry.name);
 				ucode += ";\n";
-				if (SL::is_sampler_type(E->get().type)) {
+				if (SL::is_sampler_type(entry.uniform.type)) {
 					r_gen_code.vertex_global += ucode;
 					r_gen_code.fragment_global += ucode;
 
 					GeneratedCode::Texture texture;
-					texture.name = E->key();
-					texture.hint = E->get().hint;
-					texture.type = E->get().type;
-					texture.filter = E->get().filter;
-					texture.repeat = E->get().repeat;
-					texture.global = E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL;
+					texture.name = entry.name;
+					texture.hint = entry.uniform.hint;
+					texture.type = entry.uniform.type;
+					texture.filter = entry.uniform.filter;
+					texture.repeat = entry.uniform.repeat;
+					texture.global = entry.uniform.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL;
 					if (texture.global) {
 						r_gen_code.uses_global_textures = true;
 					}
 
-					r_gen_code.texture_uniforms.write[E->get().texture_order] = texture;
+					r_gen_code.texture_uniforms.write[entry.uniform.texture_order] = texture;
 				} else {
 					if (!uses_uniforms) {
 
 						r_gen_code.defines.push_back(String("#define USE_MATERIAL_UNIFORMS\n"));
 						uses_uniforms = true;
 					}
-					uniform_defines.write[E->get().order] = ucode;
+					uniform_defines.write[entry.uniform.order] = ucode;
 					if (is_buffer_global) {
 						//globals are indices into the global table
-						uniform_sizes.write[E->get().order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
-						uniform_alignments.write[E->get().order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
+						uniform_sizes.write[entry.uniform.order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
+						uniform_alignments.write[entry.uniform.order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
-						uniform_sizes.write[E->get().order] = _get_datatype_size(E->get().type);
-						uniform_alignments.write[E->get().order] = _get_datatype_alignment(E->get().type);
+						uniform_sizes.write[entry.uniform.order] = _get_datatype_size(entry.uniform.type);
+						uniform_alignments.write[entry.uniform.order] = _get_datatype_alignment(entry.uniform.type);
 					}
 				}
 
-				p_actions.uniforms->insert(E->key(), E->get());
+				p_actions.uniforms->insert(entry.name, entry.uniform);
 			}
 
 			for (int i = 0; i < max_uniforms; i++) {
